@@ -225,47 +225,49 @@ if conv_fun['ROLLS'] > 0:
 ########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
-st.subheader("3. Probabilities to have a Plot as Reward")
+focus =False
+if Focus:
+    st.subheader("3. Probabilities to have a Plot as Reward")
 
-st.subheader("3.1 Increase the number of players")
-st.write(f'''At the beginning, there are {N} plots, once the Reward is Amazing Type and is not a Mystery Box T3, each plot has the following chance to appear, once one is giving as a reward, the collection decreases and then it chance:
-
-        - 8x8: {round(100 * p_8 / N)} % ({p_8} plots)
-    - 16x16: {round(100 * p_16 / N)} % ({p_16} plots)
-    - 32x32: {round(100 * p_32 / N)} % ({p_32} plots)''')
-
-total_spent = n_players*player_spent
-tolls_per_tspent = master_conversion_function(total_spent, rolls_by_usd_price, one_roll_mana_price, eth_rate)
-dyn, plots_earn = complete_dynamics(tolls_per_tspent['ROLLS'], fr, all_rewards)
-plots_earned_by_rolls = plots_earn[0]
-
-if plots_earned_by_rolls>0:
-    st.write(f'''We suppose a total income of {human_format(total_spent)} USD, {tolls_per_tspent['ROLLS']} rolls that means {plots_earned_by_rolls} plots as a reward as follows:
+    st.subheader("3.1 Increase the number of players")
+    st.write(f'''At the beginning, there are {N} plots, once the Reward is Amazing Type and is not a Mystery Box T3, each plot has the following chance to appear, once one is giving as a reward, the collection decreases and then it chance:
     
-        - 8x8: {plots_earn[1]} plots
-    - 16x16: {plots_earn[2]} plots
-    - 32x32: {plots_earn[3]} plots 
+            - 8x8: {round(100 * p_8 / N)} % ({p_8} plots)
+        - 16x16: {round(100 * p_16 / N)} % ({p_16} plots)
+        - 32x32: {round(100 * p_32 / N)} % ({p_32} plots)''')
 
-The given prize by plot rewards is {human_format((plots_earn[1]*480*reserve_multiplier['8x8'])+(plots_earn[1]*480*reserve_multiplier['16x16'])+(plots_earn[1]*480*reserve_multiplier['32x32']))} USD''')
+    total_spent = n_players*player_spent
+    tolls_per_tspent = master_conversion_function(total_spent, rolls_by_usd_price, one_roll_mana_price, eth_rate)
+    dyn, plots_earn = complete_dynamics(tolls_per_tspent['ROLLS'], fr, all_rewards)
+    plots_earned_by_rolls = plots_earn[0]
 
-    st.subheader("3.2 Probability to have plots as a reward.")
+    if plots_earned_by_rolls>0:
+        st.write(f'''We suppose a total income of {human_format(total_spent)} USD, {tolls_per_tspent['ROLLS']} rolls that means {plots_earned_by_rolls} plots as a reward as follows:
+        
+            - 8x8: {plots_earn[1]} plots
+        - 16x16: {plots_earn[2]} plots
+        - 32x32: {plots_earn[3]} plots 
+    
+    The given prize by plot rewards is {human_format((plots_earn[1]*480*reserve_multiplier['8x8'])+(plots_earn[1]*480*reserve_multiplier['16x16'])+(plots_earn[1]*480*reserve_multiplier['32x32']))} USD''')
+
+        st.subheader("3.2 Probability to have plots as a reward.")
 
 
-    st.write(
-        f''':blue[We use an hyper geometric distribution function to our dynamics.] 
-        Taking 8x8 plot size asn an example, with collection size {p_8} on {N} total collection, we draw {plots_earn[1]}, then the probability to chose exactly k (x-axis) events is represented by the scatter plot.''')
+        st.write(
+            f''':blue[We use an hyper geometric distribution function to our dynamics.] 
+            Taking 8x8 plot size asn an example, with collection size {p_8} on {N} total collection, we draw {plots_earn[1]}, then the probability to chose exactly k (x-axis) events is represented by the scatter plot.''')
 
-    if plots_earn[1] > 0:
-        ps = '8x8'
-        A = 6000
-        hypergeom_plot2(N, A, plots_earn[1], ps)
+        if plots_earn[1] > 0:
+            ps = '8x8'
+            A = 6000
+            hypergeom_plot2(N, A, plots_earn[1], ps)
 
-    if plots_earn[2] > 0:
-        ps = '16x16'
-        A = 1800
-        hypergeom_plot2(N, A, plots_earn[2], ps)
+        if plots_earn[2] > 0:
+            ps = '16x16'
+            A = 1800
+            hypergeom_plot2(N, A, plots_earn[2], ps)
 
-    if plots_earn[3] > 0:
-        ps = '32x32'
-        A = 88
-        hypergeom_plot2(N, A, plots_earn[3], ps)
+        if plots_earn[3] > 0:
+            ps = '32x32'
+            A = 88
+            hypergeom_plot2(N, A, plots_earn[3], ps)
