@@ -3,7 +3,6 @@ import pandas as pd
 import logging
 import requests
 from auxiliar_functions import *
-
 import plotly.express as px
 
 url = "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"
