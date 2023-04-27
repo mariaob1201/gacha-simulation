@@ -4,6 +4,7 @@ import logging
 import requests
 from auxiliar_functions import *
 import plotly.express as px
+from scipy.special import comb
 
 url = "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"
 
@@ -227,8 +228,6 @@ if conv_fun['ROLLS'] > 0:
 ########################################################################################################################
 
 try:
-    from scipy.special import comb
-
     def hypergeom_pmf(N, A, n, x):
         '''
         Probability Mass Function for Hypergeometric Distribution

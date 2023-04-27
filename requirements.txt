@@ -1,0 +1,9 @@
+pandas
+plotly
+streamlit
+requests
+scipy
+numpy
+pyprobs
+streamlit-aggrid==0.2.2-2
+scipy
