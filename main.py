@@ -327,5 +327,5 @@ try:
             hypergeom_plot2(N, A, plots_earn[3], ps)
 
 except Exception as e:
-    logging.error(f'''Error {e} in 3rd section''')
+    logging.error(f'''Error {e} in 3rd section ''')
     pass
