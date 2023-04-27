@@ -59,9 +59,9 @@ all_rewards = {'Amazing': {'Types':['Mystery Box Tier 3', 'Plot 8*8', 'Plot 16*1
 
 ###################### REWARDS
 st.sidebar.markdown("## 3 Distribution")
-n_32 = st.sidebar.slider('Desired items', min_value=0, max_value=88, value=10, step=1, key=112111123)
-n_16 = st.sidebar.slider('Desired items', min_value=0, max_value=1800, value=10, step=1, key=121111123)
-n_8 = st.sidebar.slider('Desired items', min_value=0, max_value=600, value=10, step=1, key=1211111123)
+n_32 = st.sidebar.slider('Draw size (plots 32)', min_value=0, max_value=88, value=10, step=1, key=112111123)
+n_16 = st.sidebar.slider('Draw size (plots 16)', min_value=0, max_value=1800, value=10, step=1, key=121111123)
+n_8 = st.sidebar.slider('Draw size (plots 8)', min_value=0, max_value=600, value=10, step=1, key=1211111123)
 
 
 ##################################################################################################################
@@ -108,14 +108,8 @@ df = pd.DataFrame(conv_fun, index=[0])
 st.dataframe(df)
 
 
-# Use np.random.choice to throw the die once and record the outcome
-
-
-
 st.subheader("2. First Roll Probabilities")
-#Amazing = st.number_input("Amazing reward chance ")
 
-#Regular = st.number_input("Regular reward chance ")
 
 st.write(f'''The chance for each reward class is:  
         
@@ -276,6 +270,10 @@ p_32 = 88
 p_16 = 1800
 p_8 = 6000
 N = (p_32 + p_16 + p_8)
+st.write(f'''The size collection of plots is {N}. In each roll, the collection decreases, giving then a hypergeometric distribution function. The example for 8x8 plots is:
+    - N: {N} full collection size
+    - A: Size of desired collection {p_8}
+    - n: Draws''')
 
 ps = '32x32'
 st.write(f''':blue[Plots {ps}]: {p_32}''')
