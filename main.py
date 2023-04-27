@@ -321,5 +321,6 @@ try:
             A = 88
             hypergeom_plot2(N, A, plots_earn[3], ps)
 
-except:
+except Exception as e:
+    logging.error(f'''Error {e}''')
     pass
