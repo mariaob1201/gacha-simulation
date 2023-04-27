@@ -145,6 +145,7 @@ st.dataframe(chart_data)
 ########################################################################################################################
 
 if conv_fun['ROLLS'] > 0:
+    import plotly.express as px
     st.subheader(" 2.1 Rewards Types on First Roll")
     plots_earn = {'8x8': plots_8, '16x16': plots_16, '32x32': plots_32}
 
@@ -178,6 +179,7 @@ if conv_fun['ROLLS'] > 0:
             
                 - Player earns by plots: {human_format(plots_earns)} USD 
     - Runiverse {'earns' if runi_earns > 0 else 'loses'} about {human_format(runi_earns)} USD''')
+
 
     rtype = 'Regular'
     if len(new[rtype]) > 0:
@@ -227,7 +229,6 @@ if conv_fun['ROLLS'] > 0:
 
 try:
     from scipy.special import comb
-    import plotly.express as px
 
     def hypergeom_pmf(N, A, n, x):
         '''
