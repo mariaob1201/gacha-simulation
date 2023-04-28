@@ -46,10 +46,10 @@ srp_p = st.sidebar.slider('Small Resource Pile', min_value=0.00, max_value=1.00 
                           key=12123)
 mmp_p = st.sidebar.slider('Medium Material Pack', min_value=0.00, max_value=1.00 - (smp_p + srp_p), value=1 / 6,
                           step=.01, key=121234)
-bmp_p = st.sidebar.slider('Bountiful Material Pack', min_value=0.00, max_value=1.00 - (smp_p + srp_p + mmp_p),
-                          value=1 / 6, step=.01, key=1211233)
-mrp_p = st.sidebar.slider('Medium Resource Pile', min_value=0.00, max_value=1.00 - (smp_p + srp_p + mmp_p + bmp_p),
+mrp_p = st.sidebar.slider('Medium Resource Pile', min_value=0.00, max_value=1.00 - (smp_p + srp_p + mmp_p),
                           value=1 / 6, step=.01, key=121123)
+bmp_p = st.sidebar.slider('Bountiful Material Pack', min_value=0.00, max_value=1.00 - (smp_p + srp_p + mmp_p + mrp_p),
+                          value=1 / 6, step=.01, key=1211233)
 
 p = (1 - MBT3_p) / N
 probabilities_for_amazing = [MBT3_p, p * p_8, p * p_16, p * p_32]
@@ -121,7 +121,7 @@ st.write(f'''The chance for each reward class is (by controls):
         
         - Amazing: {str(int(100 * Amazing)) + '/100'} probability
     - Regular: {str(int(100 * Regular)) + '/100'} probability
-    - Poor: {str(100 - 100 * (Amazing + Regular))} probability (as complement)''')
+    - Poor: {str(100 - 100 * (Amazing + Regular))+ '/100'} probability (as complement)''')
 
 fr = {
     'categories': ['Amazing', 'Regular', 'Poor'],
@@ -145,12 +145,17 @@ st.dataframe(chart_data)
 ########################################################################################################################
 
 if conv_fun['ROLLS'] > 0:
-    st.subheader(" 2.1 Rewards Types on First Roll")
+
     plots_earn = {'8x8': plots_8, '16x16': plots_16, '32x32': plots_32}
 
     rtype = 'Amazing'
     if len(new[rtype]) > 0:
+        st.subheader(f" 2.1 {rtype}")
         # st.write(f''':blue[{rtype} Rewards]''')
+        chart_data = pd.DataFrame(all_rewards[rtype])
+
+        st.write(f''':green[{rtype} Type] probabilities:''')
+        st.dataframe(chart_data)
 
         dict1 = {}
         for i in new[rtype]:
@@ -162,7 +167,8 @@ if conv_fun['ROLLS'] > 0:
         dict_f = {'Rewards': dict1.keys(), 'Quantity': dict1.values()}
 
         df = pd.DataFrame(dict_f)
-        # st.dataframe(df)
+        #st.write(f'''Probabilities {all_rewards[rtype]}''')
+
         fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
                      title=f"""{rtype} Rewards""",
                      height=400
@@ -184,7 +190,11 @@ if conv_fun['ROLLS'] > 0:
 
     rtype = 'Regular'
     if len(new[rtype]) > 0:
-        # st.write(f''':blue[{rtype} Rewards]''')
+        st.subheader(f" 2.2 {rtype}")
+        chart_data = pd.DataFrame(all_rewards[rtype])
+
+        st.write(f''':green[{rtype} Type] probabilities:''')
+        st.dataframe(chart_data)
 
         dict1 = {}
         for i in new[rtype]:
@@ -207,7 +217,12 @@ if conv_fun['ROLLS'] > 0:
 
     rtype = 'Poor'
     if len(new[rtype]) > 0:
+        st.subheader(f" 2.3 {rtype}")
         # st.write(f''':blue[{rtype} Rewards]''')
+        chart_data = pd.DataFrame(all_rewards[rtype])
+
+        st.write(f''':green[{rtype} Type] probabilities:''')
+        st.dataframe(chart_data)
 
         dict1 = {}
         for i in new[rtype]:
@@ -257,6 +272,7 @@ once one is giving as a reward, the collection decreases (no replacement) and th
         st.write(f''':green[Players Earnings:]
     
         - {tolls_per_tspent['ROLLS']} rolls ({int(tolls_per_tspent['ROLLS']/n_players)} per player)
+    - {tolls_per_tspent['Mana']} Mana Units 
     - {plots_earned_by_rolls} plots ({human_format((plots_earn[1]*480*reserve_multiplier['8x8'])+(plots_earn[1]*480*reserve_multiplier['16x16'])+(plots_earn[1]*480*reserve_multiplier['32x32']))} USD) as a reward as follows:
         - 8x8: {plots_earn[1]} plots
         - 16x16: {plots_earn[2]} plots
@@ -265,8 +281,7 @@ once one is giving as a reward, the collection decreases (no replacement) and th
         st.write(f''':green[Runiverse incomes:] (Control 1 conversion rates)
 
             - {human_format(total_spent)} USD
-    - {ether} ETHER
-    - {tolls_per_tspent['Mana']} Mana Units ''')
+    - {ether} ETHER''')
 
         K = plots_earn[0]
 
