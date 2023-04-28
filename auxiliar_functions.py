@@ -14,33 +14,31 @@ def human_format(num: object) -> object:
 
 
 def first_roll_out_dynamics(N, die, probabilities):
+    '''
+        Roll out simplification
+        :param N: Times the roll out is mande
+        :param die: vector of events that can occur
+        :param probabilities: vector with probabilities of each element in die vector
+        :returns: a vector of occurrences
+    '''
     initiall_roll = np.random.choice(die, size=N, p=probabilities)
     return initiall_roll
 
-
-def second_roll_out_dynamics(frou, all_rewards):
-    die = all_rewards[frou]['Types']
-    probabilities = all_rewards[frou]['Probabilities']
-    sec = np.random.choice(die, size=1, p=probabilities)
-    return sec
 
 def complete_dynamics(N, fr, all_rewards):
     plots = 0
     plots_8 = 0
     plots_16 = 0
     plots_32 = 0
-
     first_rou = first_roll_out_dynamics(N, fr['categories'], fr['probabilities'])
 
-    #salida = []
     new = {}
     new['Poor'] = []
     new['Regular'] = []
     new['Amazing'] = []
 
     for i in first_rou:
-        secnd = second_roll_out_dynamics(i, all_rewards)
-        #salida.append(secnd[0])
+        secnd = first_roll_out_dynamics(1, all_rewards[i]['Types'], all_rewards[i]['Probabilities'])
         new[i].append(secnd[0])
         if 'Plot' in secnd[0]:
             plots += 1
@@ -87,7 +85,7 @@ def hypergeom_cdf(N, A, n, t, min_value=None):
     return np.sum([hypergeom_pmf(N, A, n, x) for x in range(t + 1)])
 
 
-def hypergeom_plot2(N, n, K, ps, mean, std):
+def hypergeom_plot(N, n, K, ps, mean, std):
     '''
     Visualization of Hypergeometric Distribution for given parameters
     :param N: population size

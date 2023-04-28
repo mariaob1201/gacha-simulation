@@ -262,7 +262,7 @@ once one is giving as a reward, the collection decreases (no replacement) and th
         - 16x16: {plots_earn[2]} plots
         - 32x32: {plots_earn[3]} plots ''')
 
-        st.write(f''':green[Runiverse incomes:] 
+        st.write(f''':green[Runiverse incomes:] (Control 1 conversion rates)
 
             - {human_format(total_spent)} USD
     - {ether} ETHER
@@ -275,41 +275,41 @@ once one is giving as a reward, the collection decreases (no replacement) and th
         K = plots_earn[0]
         if plots_earn[1] > 0:
             ps = '8x8'
-            n = 6000
+            n = p_8
             mean = n * K / N
             variance = n * K * (N - n) * (N - K) / ((N * N * (N - 1)))
             std = np.sqrt(variance)
-            hypergeom_plot2(N, n, K, ps, mean, std)
+            hypergeom_plot(N, n, K, ps, mean, std)
             st.write(f''':green[{ps} plots] After {K} events Statistics are:
             
                 - The mean is {"{:.2f}".format(mean)} events
-    - Confidence interval [{"{:.2f}".format(mean - 2 * abs(std))}, {"{:.2f}".format(mean + 2 * abs(std))}]
+    - 95% Confidence interval [{"{:.2f}".format(mean - 2 * abs(std))}, {"{:.2f}".format(mean + 2 * abs(std))}]
     - Variance {"{:.2f}".format(variance)}''')
 
         if plots_earn[2] > 0:
             ps = '16x16'
-            n = 1800
+            n = p_16
             mean = n * K / N
             variance = n * K * (N - n) * (N - K) / ((N * N * (N - 1)))
             std = np.sqrt(variance)
-            hypergeom_plot2(N, n, K, ps, mean, std)
+            hypergeom_plot(N, n, K, ps, mean, std)
             st.write(f''':green[{ps} plots] After {K} events Statistics are:
             
                     - The mean is {"{:.2f}".format(mean)} events
-    - Confidence interval [{"{:.2f}".format(mean - 2 * abs(std))}, {"{:.2f}".format(mean + 2 * abs(std))}]
+    - 95% Confidence interval [{"{:.2f}".format(mean - 2 * abs(std))}, {"{:.2f}".format(mean + 2 * abs(std))}]
     - Variance {"{:.2f}".format(variance)}''')
 
         if plots_earn[3] > 0:
             ps = '32x32'
-            n = 88
+            n = p_32
             mean = n * K / N
             variance = n * K * (N - n) * (N - K) / ((N * N * (N - 1)))
             std = np.sqrt(variance)
-            hypergeom_plot2(N, n, K, ps, mean, std)
+            hypergeom_plot(N, n, K, ps, mean, std)
             st.write(f''':green[{ps} plots] After {K} events Statistics are:
             
                     - The mean is {"{:.2f}".format(mean)} events
-    - Confidence interval [{"{:.2f}".format(mean - 2 * abs(std))}, {"{:.2f}".format(mean + 2 * abs(std))}]
+    - 95% Confidence interval [{"{:.2f}".format(mean - 2 * abs(std))}, {"{:.2f}".format(mean + 2 * abs(std))}]
     - Variance {"{:.2f}".format(variance)}''')
 
 except Exception as e:
