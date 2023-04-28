@@ -22,7 +22,7 @@ N = (p_32 + p_16 + p_8)
 
 st.sidebar.markdown("## 1. Master Conversion Formula")
 usd_spent = st.sidebar.slider('Player Spent (USD)', min_value=0.00, max_value=1000.00, value=100.00, step=.01, key=111)
-rolls_by_usd_price = st.sidebar.slider('One roll equals USD', min_value=0.01, max_value=50.00, value=1.15, step=.01,
+rolls_by_usd_price = st.sidebar.slider('One roll equals USD', min_value=0.01, max_value=50.00, value=3.25, step=.01,
                                        key=122)
 one_roll_mana_price = st.sidebar.slider('One roll equals Mana Units', min_value=0.01, max_value=100.00, value=2.50,
                                         step=.01, key=121)
@@ -67,7 +67,7 @@ all_rewards = {'Amazing': {'Types': ['Mystery Box Tier 3', 'Plot 8*8', 'Plot 16*
 
 ###################### REWARDS
 st.sidebar.markdown("## 3 Plot Chances")
-n_players = st.sidebar.slider('Number of players', min_value=0, max_value=1000, value=100, step=1, key=121117711123)
+n_players = st.sidebar.slider('Number of players', min_value=0, max_value=100000, value=80, step=1, key=121117711123)
 #player_spent = st.sidebar.slider('USD spent per player (avg)', min_value=0, max_value=1000, value=100, step=1, key=77)
 
 
@@ -282,9 +282,9 @@ once one is giving as a reward, the collection decreases (no replacement) and th
         - {tolls_per_tspent['ROLLS']} rolls (In average {int(tolls_per_tspent['ROLLS']/n_players)} per player)
     - {tolls_per_tspent['Mana']} Mana Units 
     - {plots_earned_by_rolls} plots ({human_format(480*((plots_earn[1]*reserve_multiplier['8x8'])+(plots_earn[2]*reserve_multiplier['16x16'])+(plots_earn[-1]*reserve_multiplier['32x32'])))} USD) as a reward as follows:
-        - 8x8: {plots_earn[1]} plots
-        - 16x16: {plots_earn[2]} plots
-        - 32x32: {plots_earn[3]} plots ''')
+        - 8x8: {plots_earn[1]} plots ({480*plots_earn[1]*reserve_multiplier['8x8']} USD)
+        - 16x16: {plots_earn[2]} plots ({480*plots_earn[2]*reserve_multiplier['16x16']} USD)
+        - 32x32: {plots_earn[3]} plots ({480*plots_earn[3]*reserve_multiplier['32x32']} USD) ''')
 
         st.write(f''':green[Runiverse incomes:] (Control 1 conversion rates)
 
