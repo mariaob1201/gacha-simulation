@@ -256,7 +256,7 @@ once one is giving as a reward, the collection decreases (no replacement) and th
 
         st.write(f''':green[Players Earnings:]
     
-        - {tolls_per_tspent['ROLLS']} rolls ({tolls_per_tspent['ROLLS']/n_players} per player)
+        - {tolls_per_tspent['ROLLS']} rolls ({int(tolls_per_tspent['ROLLS']/n_players)} per player)
     - {plots_earned_by_rolls} plots ({human_format((plots_earn[1]*480*reserve_multiplier['8x8'])+(plots_earn[1]*480*reserve_multiplier['16x16'])+(plots_earn[1]*480*reserve_multiplier['32x32']))} USD) as a reward as follows:
         - 8x8: {plots_earn[1]} plots
         - 16x16: {plots_earn[2]} plots
@@ -268,11 +268,13 @@ once one is giving as a reward, the collection decreases (no replacement) and th
     - {ether} ETHER
     - {tolls_per_tspent['Mana']} Mana Units ''')
 
+        K = plots_earn[0]
+
         st.subheader("3.2 Probability to have plots as a reward.")
         st.write(
-            f''':green[We use an hyper geometric distribution function to our dynamics.]''')
+            f''':green[We use an hyper geometric distribution function to our dynamics.] Probabilities are given on {K} events.''')
 
-        K = plots_earn[0]
+
         if plots_earn[1] > 0:
             ps = '8x8'
             n = p_8
@@ -282,8 +284,8 @@ once one is giving as a reward, the collection decreases (no replacement) and th
             hypergeom_plot(N, n, K, ps, mean, std)
             st.write(f''':green[{ps} plots] After {K} events Statistics are:
             
-                - The mean is {"{:.2f}".format(mean)} events
-    - 95% Confidence interval [{"{:.2f}".format(mean - 2 * abs(std))}, {"{:.2f}".format(mean + 2 * abs(std))}]
+                - The mean is having {"{:.2f}".format(mean)} plots of that type
+    - 95% Confidence interval [{"{:.2f}".format(max(0,mean - 2 * abs(std)))}, {"{:.2f}".format(mean + 2 * abs(std))}] plots
     - Variance {"{:.2f}".format(variance)}''')
 
         if plots_earn[2] > 0:
@@ -295,8 +297,8 @@ once one is giving as a reward, the collection decreases (no replacement) and th
             hypergeom_plot(N, n, K, ps, mean, std)
             st.write(f''':green[{ps} plots] After {K} events Statistics are:
             
-                    - The mean is {"{:.2f}".format(mean)} events
-    - 95% Confidence interval [{"{:.2f}".format(mean - 2 * abs(std))}, {"{:.2f}".format(mean + 2 * abs(std))}]
+                    - The mean is having {"{:.2f}".format(mean)} plots of that type
+    - 95% Confidence interval [{"{:.2f}".format(max(0,mean - 2 * abs(std)))}, {"{:.2f}".format(mean + 2 * abs(std))}] plots
     - Variance {"{:.2f}".format(variance)}''')
 
         if plots_earn[3] > 0:
@@ -308,8 +310,8 @@ once one is giving as a reward, the collection decreases (no replacement) and th
             hypergeom_plot(N, n, K, ps, mean, std)
             st.write(f''':green[{ps} plots] After {K} events Statistics are:
             
-                    - The mean is {"{:.2f}".format(mean)} events
-    - 95% Confidence interval [{"{:.2f}".format(mean - 2 * abs(std))}, {"{:.2f}".format(mean + 2 * abs(std))}]
+                    - The mean is having {"{:.2f}".format(mean)} plots of that type
+    - 95% Confidence interval [{"{:.2f}".format(max(0,mean - 2 * abs(std)))}, {"{:.2f}".format(mean + 2 * abs(std))}] plots
     - Variance {"{:.2f}".format(variance)}''')
 
 except Exception as e:
