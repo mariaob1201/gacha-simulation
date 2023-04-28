@@ -259,7 +259,7 @@ try:
         return np.sum([hypergeom_pmf(N, A, n, x) for x in range(t + 1)])
 
 
-    def hypergeom_plot2(N, n, K, ps):
+    def hypergeom_plot2(N, n, K, ps, mean, std):
         '''
         Visualization of Hypergeometric Distribution for given parameters
         :param N: population size
@@ -269,9 +269,15 @@ try:
         '''
         x = np.arange(0, K + 1)
         y = [(hypergeom_pmf(N, n, K, x)) for x in range(K + 1)]
-        df = pd.DataFrame({f"k events": x, 'Probability': y})
-        fig = px.scatter(df, x=f"k events", y="Probability",
-                         title=f"Plot Size {ps} - Probabilities of k events")
+        df = pd.DataFrame({f"Number of events": x, 'Probability': y})
+        fig = px.scatter(df, x=f"Number of events", y="Probability",
+                         title=f"Plot Size {ps} - Probabilities on {K} events")
+        fig.add_vline(x=mean, line_width=3, line_dash="dash", line_color="green",
+                      annotation_text=f'''Mean {"{:.2f}".format(mean)}''', annotation_position="bottom left")
+        fig.add_vrect(x0=mean-2*abs(std), x1=mean+2*abs(std),
+                      annotation_text=f'''CI''', annotation_position="top left",
+                      fillcolor="green", opacity=0.25, line_width=0
+                      )
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
 
@@ -295,8 +301,8 @@ try:
         
             - {human_format(total_spent)} USD
     - {ether} ETHER
-    - {tolls_per_tspent['Mana']} Mana Units
-    ''')
+    - {tolls_per_tspent['Mana']} Mana Units ''')
+
         st.write(f''':blue[Players Earnings:]
     
         - {tolls_per_tspent['ROLLS']} rolls ({tolls_per_tspent['ROLLS']/n_players} per player)
@@ -307,23 +313,47 @@ try:
 
         st.subheader("3.2 Probability to have plots as a reward.")
         st.write(
-            f''':blue[We use an hyper geometric distribution function to our dynamics.] 
-            Taking 8x8 plot size asn an example, with collection size {p_8} on {N} total collection, we draw {plots_earn[1]}, then the probability to chose exactly k (x-axis) events is represented by the scatter plot.''')
+            f''':blue[We use an hyper geometric distribution function to our dynamics.]''')
 
+        K = plots_earn[0]
         if plots_earn[1] > 0:
             ps = '8x8'
-            A = 6000
-            hypergeom_plot2(N, A, plots_earn[1], ps)
+            n = 6000
+            mean = n * K / N
+            variance = n * K * (N - n) * (N - K) / ((N * N * (N - 1)))
+            std = np.sqrt(variance)
+            hypergeom_plot2(N, n, K, ps, mean, std)
+            st.write(f''':blue[{ps} plots:] After {K} events Statistics are:
+            
+                - The mean is {"{:.2f}".format(mean)} events
+    - Confidence interval [{"{:.2f}".format(mean - 2 * abs(std))}, {"{:.2f}".format(mean + 2 * abs(std))}]
+    - Variance {"{:.2f}".format(variance)}''')
 
         if plots_earn[2] > 0:
             ps = '16x16'
-            A = 1800
-            hypergeom_plot2(N, A, plots_earn[2], ps)
+            n = 1800
+            mean = n * K / N
+            variance = n * K * (N - n) * (N - K) / ((N * N * (N - 1)))
+            std = np.sqrt(variance)
+            hypergeom_plot2(N, n, K, ps, mean, std)
+            st.write(f''':blue[{ps} plots:] After {K} events Statistics are:
+            
+                    - The mean is {"{:.2f}".format(mean)} events
+    - Confidence interval [{"{:.2f}".format(mean - 2 * abs(std))}, {"{:.2f}".format(mean + 2 * abs(std))}]
+    - Variance {"{:.2f}".format(variance)}''')
 
         if plots_earn[3] > 0:
             ps = '32x32'
-            A = 88
-            hypergeom_plot2(N, A, plots_earn[3], ps)
+            n = 88
+            mean = n * K / N
+            variance = n * K * (N - n) * (N - K) / ((N * N * (N - 1)))
+            std = np.sqrt(variance)
+            hypergeom_plot2(N, n, K, ps, mean, std)
+            st.write(f''':blue[{ps} plots:] After {K} events Statistics are:
+            
+                    - The mean is {"{:.2f}".format(mean)} events
+    - Confidence interval [{"{:.2f}".format(mean - 2 * abs(std))}, {"{:.2f}".format(mean + 2 * abs(std))}]
+    - Variance {"{:.2f}".format(variance)}''')
 
 except Exception as e:
     logging.error(f'''Error {e} in 3rd section ''')
