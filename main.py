@@ -4,7 +4,6 @@ import logging
 import requests
 from auxiliar_functions import *
 import plotly.express as px
-from scipy.special import comb
 
 url = "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"
 
@@ -101,11 +100,11 @@ def master_conversion_function(usd_spent, rolls_by_usd_price, one_roll_mana_pric
     return conversion
 
 
-st.title("Gacha Rolls Dynamics")
+st.title(":blue[Gacha Rolls Dynamics]")
 st.write(f'''We define a master conversion function between one roll cost in USD, then in Ethereum and finally by Mana. The equivalence between Mana and hard currencies can be changed by control usage. 
 Finally we run a probability function based again on defined probabilities per reward.''')
 
-st.subheader("1. Master Conversion Function")
+st.title("1. Master Conversion Function")
 st.write(f''':green[Equivalence between currencies:]
 
     - REAL: The Ethereum corresponds to {eth_rate} USD at this moment.
@@ -116,7 +115,7 @@ df = pd.DataFrame(conv_fun, index=[0])
 st.dataframe(df)
 
 
-st.subheader("2. First Roll Probabilities")
+st.title("2. First Roll Probabilities")
 
 st.write(f'''The chance for each reward class is (by controls):  
         
@@ -164,11 +163,12 @@ if conv_fun['ROLLS'] > 0:
 
         df = pd.DataFrame(dict_f)
         # st.dataframe(df)
-        fig = px.bar(df, x="Rewards", y="Quantity",
+        fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
                      title=f"""{rtype} Rewards""",
                      height=400
                      )
-        fig.update_traces(textfont_size=12, textangle=0, textposition="outside", cliponaxis=False)
+        fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
         if plots_earned[0] > 0:
@@ -197,11 +197,12 @@ if conv_fun['ROLLS'] > 0:
 
         df = pd.DataFrame(dict_f)
         # st.dataframe(df)
-        fig = px.bar(df, x="Rewards", y="Quantity",
+        fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
                      title=f"""{rtype} Rewards""",
                      height=400
                      )
-        fig.update_traces(textfont_size=12, textangle=0, textposition="outside", cliponaxis=False)
+        fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
     rtype = 'Poor'
@@ -219,11 +220,12 @@ if conv_fun['ROLLS'] > 0:
 
         df = pd.DataFrame(dict_f)
         # st.dataframe(df)
-        fig = px.bar(df, x="Rewards", y="Quantity",
+        fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
                      title=f"""{rtype} Rewards""",
                      height=400
                      )
-        fig.update_traces(textfont_size=12, textangle=0, textposition="outside", cliponaxis=False)
+        fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
 ########################################################################################################################
@@ -231,60 +233,7 @@ if conv_fun['ROLLS'] > 0:
 ########################################################################################################################
 
 try:
-    def hypergeom_pmf(N, A, n, x):
-        '''
-        Probability Mass Function for Hypergeometric Distribution
-        :param N: population size
-        :param A: total number of desired items in N
-        :param n: number of draws made from N
-        :param x: number of desired items in our draw of n items
-        :returns: PMF computed at x
-        '''
-        Achoosex = comb(A, x)
-        NAchoosenx = comb(N - A, n - x)
-        Nchoosen = comb(N, n)
-
-        return (Achoosex) * NAchoosenx / Nchoosen
-
-
-    def hypergeom_cdf(N, A, n, t, min_value=None):
-        '''
-        Cumulative Density Funtion for Hypergeometric Distribution
-        :param N: population size
-        :param A: total number of desired items in N
-        :param n: number of draws made from N
-        :param t: number of desired items in our draw of n items up to t
-        :returns: CDF computed up to t
-        '''
-        if min_value:
-            return np.sum([hypergeom_pmf(N, A, n, x) for x in range(min_value, t + 1)])
-
-        return np.sum([hypergeom_pmf(N, A, n, x) for x in range(t + 1)])
-
-
-    def hypergeom_plot2(N, n, K, ps, mean, std):
-        '''
-        Visualization of Hypergeometric Distribution for given parameters
-        :param N: population size
-        :param n: total number of desired items in N
-        :param K: number of draws made from N
-        :returns: Plot of Hyper geometric Distribution for given parameters
-        '''
-        x = np.arange(0, K + 1)
-        y = [(hypergeom_pmf(N, n, K, x)) for x in range(K + 1)]
-        df = pd.DataFrame({f"Number of events": x, 'Probability': y})
-        fig = px.scatter(df, x=f"Number of events", y="Probability",
-                         title=f"Plot Size {ps} - Probabilities on {K} events")
-        fig.add_vline(x=mean, line_width=3, line_dash="dash", line_color="green",
-                      annotation_text=f'''Mean {"{:.2f}".format(mean)}''', annotation_position="bottom left")
-        fig.add_vrect(x0=mean-2*abs(std), x1=mean+2*abs(std),
-                      annotation_text=f'''CI''', annotation_position="top left",
-                      fillcolor="red", opacity=0.25, line_width=0
-                      )
-        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
-
-
-    st.subheader("3. Probabilities to have a Plot as Reward")
+    st.title("3. Probabilities to have a Plot as Reward")
 
     st.subheader("3.1 Increase the number of players")
     st.write(f'''At the beginning, there are {N} plots. If the Reward is Amazing Type and is not a Mystery Box T3, each plot has the following chance to appear:
@@ -301,7 +250,7 @@ once one is giving as a reward, the collection decreases (no replacement) and th
 
     ether = "{:.2f}".format(tolls_per_tspent['ETH'])
 
-    st.write(f'''(3 Control) {n_players} players, each of them spending {usd_spent} USD on average means:''')
+    st.write(f'''(3 Plot Chances - Control) {n_players} players, each of them spending {usd_spent} USD on average means:''')
 
     if plots_earned_by_rolls > 0:
 
