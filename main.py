@@ -4,6 +4,8 @@ import logging
 import requests
 from auxiliar_functions import *
 import plotly.express as px
+from scipy.stats import binom
+
 
 url = "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"
 
@@ -139,20 +141,57 @@ chart_data = pd.DataFrame(
     {'Rewards_Types': ['Poor', 'Regular', 'Amazing'],
      'Quantity': [len(new['Poor']), len(new['Regular']), len(new['Amazing'])]})
 
-st.write(f''':green[In {conv_fun['ROLLS']} rolls] the rewards are:''')
-st.dataframe(chart_data)
+n = conv_fun['ROLLS']
+
+if n>0:
+    def binomial_plot(n,p, title):
+
+        # defining list of r values
+        r_values = list(range(n + 1))
+        # list of pmf values
+        dist = [binom.pmf(r, n, p) for r in r_values]
+        mean = n * p
+        variance = n * p * (1 - p)
+        df = pd.DataFrame({f"Number of events": r_values, 'Probability': dist})
+        fig = px.scatter(df, x=f"Number of events", y="Probability",
+                         title=f"{title}")
+        fig.add_vline(x=mean, line_width=3, line_dash="dash", line_color="green",
+                      annotation_text=f'''Mean {"{:.2f}".format(mean)}''', annotation_position="bottom left")
+        fig.add_vrect(x0=mean - 2 * abs(np.sqrt(variance)), x1=mean + 2 * abs(np.sqrt(variance)),
+                      annotation_text=f'''CI - [{"{:.2f}".format(mean - 2 * abs(np.sqrt(variance)))}, {"{:.2f}".format(mean + 2 * abs(np.sqrt(variance)))}]''',
+                      annotation_position="top right",
+                      fillcolor="red", opacity=0.25, line_width=0
+                      )
+        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+
+    if Amazing>0:
+        binomial_plot(conv_fun['ROLLS'], Amazing, f'''Amazing Reward Chances on {n} rolls''')
+
+    if Regular > 0:
+        binomial_plot(conv_fun['ROLLS'], Regular, f'''Regular Reward Chances on {n} rolls''')
+
+    if 1-(Amazing+Regular)>0:
+        binomial_plot(conv_fun['ROLLS'], 1-(Amazing+Regular), f'''Poor Reward Chances on {n} rolls''')
+
+
+
+
+
 
 ########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
 
 if conv_fun['ROLLS'] > 0:
+    st.subheader('''2.1 Example ''')
+    st.write(f''':green[As an Example, in {conv_fun['ROLLS']} rolls] the rewards are distributed as follows:''')
+    st.dataframe(chart_data)
 
     plots_earn = {'8x8': plots_8, '16x16': plots_16, '32x32': plots_32}
 
     rtype = 'Amazing'
     if len(new[rtype]) > 0:
-        st.subheader(f" 2.1 {rtype}")
+
 
         dict0 = {}
         for i in new[rtype]:
@@ -191,7 +230,6 @@ if conv_fun['ROLLS'] > 0:
 
     rtype = 'Regular'
     if len(new[rtype]) > 0:
-        st.subheader(f" 2.2 {rtype}")
 
         dict0 = {}
         for i in new[rtype]:
@@ -222,7 +260,6 @@ if conv_fun['ROLLS'] > 0:
 
     rtype = 'Poor'
     if len(new[rtype]) > 0:
-        st.subheader(f" 2.3 {rtype}")
 
         dict0 = {}
         for i in new[rtype]:
@@ -256,10 +293,10 @@ if conv_fun['ROLLS'] > 0:
 ########################################################################################################################
 
 try:
-    st.title("3. Probabilities to have a Plot as Reward")
+    st.title("3. Plots Distribution Function")
 
-    st.subheader("3.1 Increase the number of players")
-    st.write(f'''At the beginning, there are {N} plots. If the Reward is Amazing Type and is not a Mystery Box T3, each plot has the following chance to appear:
+    st.subheader("3.1 Example Increasing the number of players")
+    st.write(f'''At the beginning, there are {N} plots. If the Reward is Amazing Type and is not a Mystery Box T3, each plot has the following distribution:
     
             - 8x8: {round(100 * p_8 / N)} % ({p_8} plots)
     - 16x16: {round(100 * p_16 / N)} % ({p_16} plots)
@@ -292,12 +329,8 @@ once one is giving as a reward, the collection decreases (no replacement) and th
     - {ether} ETHER''')
 
         K = plots_earn[0]
-
-
-
-
         if plots_earn[0] > 0:
-            st.subheader("3.2 Probability to have plots as a reward.")
+            st.subheader(f"3.2 Probability to have plot types as a reward for the given number of plots {(K)}.")
             st.write(
                 f''':green[We use an hyper geometric distribution function to our dynamics.] Probabilities are given on {K} events.''')
 
