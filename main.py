@@ -34,7 +34,9 @@ Regular = st.sidebar.slider('Regular reward chance', min_value=0.00, max_value=1
 
 ###################### REWARDS
 st.sidebar.markdown("## 2.1 Rewards Chances - Amazing")
-MBT3_p = st.sidebar.slider('Mystery Box Tier 3', min_value=0.00, max_value=1.00, value=0.4, step=.01, key=1322)
+MBT3_p = st.sidebar.slider('Mystery Box Tier 3', min_value=0.00, max_value=1.00, value=0.7, step=.01, key=13292)
+p8_p = st.sidebar.slider('8x8 Plot', min_value=0.00, max_value=1.00-MBT3_p, value=0.2, step=.01, key=13229)
+p16_p = st.sidebar.slider('16x16 Plot', min_value=0.00, max_value=1.00-(MBT3_p+p8_p), value=0.09, step=.01, key=139292)
 
 st.sidebar.markdown("## 2.2 Rewards Chances - Regular")
 MBT1 = st.sidebar.slider('Mystery Box Tier 1', min_value=0.00, max_value=1.00, value=0.33, step=.01, key=1232)
@@ -55,12 +57,12 @@ p = (1 - MBT3_p) / N
 probabilities_for_amazing = [MBT3_p, p * p_8, p * p_16, p * p_32]
 
 all_rewards = {'Amazing': {'Types': ['Mystery Box Tier 3', 'Plot 8*8', 'Plot 16*16', 'Plot 32*32'],
-                           'Probabilities': probabilities_for_amazing},
+                           'Probabilities': [MBT3_p, p8_p, p16_p, 1-(MBT3_p+p8_p+p16_p)]},
                'Regular': {'Types': ['Mystery Box Tier 1', 'Recipe', 'Mystery Box Tier 2'],
                            'Probabilities': [MBT1, Recipe, 1 - (MBT1 + Recipe)]},
-               'Poor': {'Types': ['Small Material Pack', 'Small Resource Pile', 'Medium Material Pack',
-                                  'Bountiful Material Pack', 'Medium Resource Pile', 'Bountiful Resource Pile'],
-                        'Probabilities': [smp_p, srp_p, mmp_p, bmp_p, mrp_p,
+               'Poor': {'Types': ['Small Material Pack', 'Medium Material Pack', 'Bountiful Material Pack',
+                                  'Small Resource Pile', 'Medium Resource Pile', 'Bountiful Resource Pile'],
+                        'Probabilities': [smp_p, mmp_p, bmp_p, srp_p, mrp_p,
                                           1.00 - (smp_p + srp_p + mmp_p + bmp_p + mrp_p)]}}
 
 ###################### REWARDS
@@ -148,26 +150,22 @@ if conv_fun['ROLLS'] > 0:
 
     plots_earn = {'8x8': plots_8, '16x16': plots_16, '32x32': plots_32}
 
-    rtype = 'Poor'
+    rtype = 'Amazing'
     if len(new[rtype]) > 0:
         st.subheader(f" 2.1 {rtype}")
-        # st.write(f''':blue[{rtype} Rewards]''')
-        chart_data = pd.DataFrame(all_rewards[rtype])
 
-        st.write(f''':green[{rtype} Type] probabilities:''')
-        st.dataframe(chart_data)
-
-        dict1 = {}
+        dict0 = {}
         for i in new[rtype]:
-            if i not in dict1.keys():
-                dict1[i] = 1
+            if i not in dict0.keys():
+                dict0[i] = 1
             else:
-                dict1[i] += 1
+                dict0[i] += 1
 
+        sorted_ = sorted(dict0.items(), key=lambda x: x[0])
+        dict1 = dict(sorted_)
         dict_f = {'Rewards': dict1.keys(), 'Quantity': dict1.values()}
 
         df = pd.DataFrame(dict_f)
-        #st.write(f'''Probabilities {all_rewards[rtype]}''')
 
         fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
                      title=f"""{rtype} Rewards""",
@@ -178,30 +176,32 @@ if conv_fun['ROLLS'] > 0:
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
         if plots_earned[0] > 0:
-            plots_earns = (plots_8 * plot_base_price * reserve_multiplier['8x8']) + (
-                        plots_16 * plot_base_price * reserve_multiplier['16x16']) + (
-                                      plots_32 * plot_base_price * reserve_multiplier['32x32'])
+            plots_earns = plot_base_price*((plots_8 * reserve_multiplier['8x8']) + (
+                        plots_16 * reserve_multiplier['16x16']) + (plots_32  * reserve_multiplier['32x32']))
             runi_earns = conv_fun['USD'] - plots_earns
             st.write(f''':green[Player earns {int(plots_earned[0])} plots] as follows: {plots_earn}. That means in USD: 
             
                 - Player earns by plots: {human_format(plots_earns)} USD 
     - Runiverse {'earns' if runi_earns > 0 else 'loses'} about {human_format(runi_earns)} USD''')
 
+        chart_data = pd.DataFrame(all_rewards[rtype])
+
+        st.write(f''':green[{rtype} Type] probabilities:''')
+        st.dataframe(chart_data)
 
     rtype = 'Regular'
     if len(new[rtype]) > 0:
         st.subheader(f" 2.2 {rtype}")
-        chart_data = pd.DataFrame(all_rewards[rtype])
 
-        st.write(f''':green[{rtype} Type] probabilities:''')
-        st.dataframe(chart_data)
-
-        dict1 = {}
+        dict0 = {}
         for i in new[rtype]:
-            if i not in dict1.keys():
-                dict1[i] = 1
+            if i not in dict0.keys():
+                dict0[i] = 1
             else:
-                dict1[i] += 1
+                dict0[i] += 1
+
+        sorted_ = sorted(dict0.items(), key=lambda x: x[0])
+        dict1 = dict(sorted_)
 
         dict_f = {'Rewards': dict1.keys(), 'Quantity': dict1.values()}
 
@@ -215,21 +215,24 @@ if conv_fun['ROLLS'] > 0:
         fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
-    rtype = 'Amazing'
+        chart_data = pd.DataFrame(all_rewards[rtype])
+
+        st.write(f''':green[{rtype} Type] probabilities:''')
+        st.dataframe(chart_data)
+
+    rtype = 'Poor'
     if len(new[rtype]) > 0:
         st.subheader(f" 2.3 {rtype}")
-        # st.write(f''':blue[{rtype} Rewards]''')
-        chart_data = pd.DataFrame(all_rewards[rtype])
 
-        st.write(f''':green[{rtype} Type] probabilities:''')
-        st.dataframe(chart_data)
-
-        dict1 = {}
+        dict0 = {}
         for i in new[rtype]:
-            if i not in dict1.keys():
-                dict1[i] = 1
+            if i not in dict0.keys():
+                dict0[i] = 1
             else:
-                dict1[i] += 1
+                dict0[i] += 1
+
+        sorted_ = sorted(dict0.items(), key=lambda x: x[0])
+        dict1 = dict(sorted_)
 
         dict_f = {'Rewards': dict1.keys(), 'Quantity': dict1.values()}
 
@@ -242,6 +245,11 @@ if conv_fun['ROLLS'] > 0:
         fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
         fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+
+        chart_data = pd.DataFrame(all_rewards[rtype])
+
+        st.write(f''':green[{rtype} Type] probabilities:''')
+        st.dataframe(chart_data)
 
 ########################################################################################################################
 ########################################################################################################################
@@ -271,9 +279,9 @@ once one is giving as a reward, the collection decreases (no replacement) and th
 
         st.write(f''':green[Players Earnings:]
     
-        - {tolls_per_tspent['ROLLS']} rolls ({int(tolls_per_tspent['ROLLS']/n_players)} per player)
+        - {tolls_per_tspent['ROLLS']} rolls (In average {int(tolls_per_tspent['ROLLS']/n_players)} per player)
     - {tolls_per_tspent['Mana']} Mana Units 
-    - {plots_earned_by_rolls} plots ({human_format((plots_earn[1]*480*reserve_multiplier['8x8'])+(plots_earn[1]*480*reserve_multiplier['16x16'])+(plots_earn[1]*480*reserve_multiplier['32x32']))} USD) as a reward as follows:
+    - {plots_earned_by_rolls} plots ({human_format(480*((plots_earn[1]*reserve_multiplier['8x8'])+(plots_earn[2]*reserve_multiplier['16x16'])+(plots_earn[-1]*reserve_multiplier['32x32'])))} USD) as a reward as follows:
         - 8x8: {plots_earn[1]} plots
         - 16x16: {plots_earn[2]} plots
         - 32x32: {plots_earn[3]} plots ''')
@@ -285,12 +293,15 @@ once one is giving as a reward, the collection decreases (no replacement) and th
 
         K = plots_earn[0]
 
-        st.subheader("3.2 Probability to have plots as a reward.")
-        st.write(
-            f''':green[We use an hyper geometric distribution function to our dynamics.] Probabilities are given on {K} events.''')
 
 
-        if plots_earn[1] > 0:
+
+        if plots_earn[0] > 0:
+            st.subheader("3.2 Probability to have plots as a reward.")
+            st.write(
+                f''':green[We use an hyper geometric distribution function to our dynamics.] Probabilities are given on {K} events.''')
+
+
             ps = '8x8'
             n = p_8
             mean = n * K / N
@@ -300,10 +311,9 @@ once one is giving as a reward, the collection decreases (no replacement) and th
             st.write(f''':green[{ps} plots] After {K} events Statistics are:
             
                 - The mean is having {"{:.2f}".format(mean)} plots of that type
-    - 95% Confidence interval [{"{:.2f}".format(max(0,mean - 2 * abs(std)))}, {"{:.2f}".format(mean + 2 * abs(std))}] plots
+    - 95% Confidence interval: [{"{:.2f}".format(max(0,mean - 2 * abs(std)))}, {"{:.2f}".format(mean + 2 * abs(std))}] plots of that type
     - Variance {"{:.2f}".format(variance)}''')
 
-        if plots_earn[2] > 0:
             ps = '16x16'
             n = p_16
             mean = n * K / N
@@ -313,10 +323,9 @@ once one is giving as a reward, the collection decreases (no replacement) and th
             st.write(f''':green[{ps} plots] After {K} events Statistics are:
             
                     - The mean is having {"{:.2f}".format(mean)} plots of that type
-    - 95% Confidence interval [{"{:.2f}".format(max(0,mean - 2 * abs(std)))}, {"{:.2f}".format(mean + 2 * abs(std))}] plots
+    - 95% Confidence interval: [{"{:.2f}".format(max(0,mean - 2 * abs(std)))}, {"{:.2f}".format(mean + 2 * abs(std))}] plots of that type
     - Variance {"{:.2f}".format(variance)}''')
 
-        if plots_earn[3] > 0:
             ps = '32x32'
             n = p_32
             mean = n * K / N
@@ -326,7 +335,7 @@ once one is giving as a reward, the collection decreases (no replacement) and th
             st.write(f''':green[{ps} plots] After {K} events Statistics are:
             
                     - The mean is having {"{:.2f}".format(mean)} plots of that type
-    - 95% Confidence interval [{"{:.2f}".format(max(0,mean - 2 * abs(std)))}, {"{:.2f}".format(mean + 2 * abs(std))}] plots
+    - 95% Confidence interval: [{"{:.2f}".format(max(0,mean - 2 * abs(std)))}, {"{:.2f}".format(mean + 2 * abs(std))}] plots of that type
     - Variance {"{:.2f}".format(variance)}''')
 
 except Exception as e:
