@@ -116,7 +116,7 @@ st.dataframe(df)
 
 
 st.title("2. First Roll Probabilities")
-
+st.subheader(f" 2.0 Explanation")
 st.write(f'''The chance for each reward class is (by controls):  
         
         - Amazing: {str(int(100 * Amazing)) + '/100'} probability
@@ -137,7 +137,7 @@ chart_data = pd.DataFrame(
     {'Rewards_Types': ['Poor', 'Regular', 'Amazing'],
      'Quantity': [len(new['Poor']), len(new['Regular']), len(new['Amazing'])]})
 
-st.write(f''':green[In {conv_fun['ROLLS']} runs] the rewards are:''')
+st.write(f''':green[In {conv_fun['ROLLS']} rolls] the rewards are:''')
 st.dataframe(chart_data)
 
 ########################################################################################################################
@@ -148,7 +148,7 @@ if conv_fun['ROLLS'] > 0:
 
     plots_earn = {'8x8': plots_8, '16x16': plots_16, '32x32': plots_32}
 
-    rtype = 'Amazing'
+    rtype = 'Poor'
     if len(new[rtype]) > 0:
         st.subheader(f" 2.1 {rtype}")
         # st.write(f''':blue[{rtype} Rewards]''')
@@ -215,7 +215,7 @@ if conv_fun['ROLLS'] > 0:
         fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
-    rtype = 'Poor'
+    rtype = 'Amazing'
     if len(new[rtype]) > 0:
         st.subheader(f" 2.3 {rtype}")
         # st.write(f''':blue[{rtype} Rewards]''')
