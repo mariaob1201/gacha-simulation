@@ -22,18 +22,18 @@ p_8 = 6000
 N = (p_32 + p_16 + p_8)
 
 
-st.sidebar.markdown("## 1. Master Conversion Formula")
-usd_spent = st.sidebar.slider('Player Spent (USD)', min_value=0.00, max_value=1000.00, value=100.00, step=.01, key=111)
-rolls_by_usd_price = st.sidebar.slider('One roll equals USD', min_value=0.01, max_value=50.00, value=3.25, step=.01,
-                                       key=122)
-one_roll_mana_price = st.sidebar.slider('One roll equals Mana Units', min_value=0.01, max_value=100.00, value=2.50,
-                                        step=.01, key=121)
+#st.sidebar.markdown("## 1. Master Conversion Formula")
+#usd_spent = st.sidebar.slider('Player Spent (USD)', min_value=0.00, max_value=1000.00, value=100.00, step=.01, key=111)
+
 
 st.sidebar.markdown("## 2. First Roll Probabilities")
-Amazing = st.sidebar.slider('Amazing reward chance', min_value=0.00, max_value=1.00, value=0.01, step=.01, key=1)
-Regular = st.sidebar.slider('Regular reward chance', min_value=0.00, max_value=1.00 - Amazing, value=0.1, step=.01,
-                            key=11)
+Amazing_p = st.sidebar.slider('Amazing reward chance on 100 opportunities',
+                              min_value=0.00, max_value=10.00, value=0.50, step=.01, key=1)
+Amazing = Amazing_p/100
 
+Regular_p = st.sidebar.slider('Regular reward chance on 100 opportunities', min_value=0.00, max_value=100.00,
+                              value=2.0, step=.01, key=11)
+Regular = Regular_p/100
 ###################### REWARDS
 st.sidebar.markdown("## 2.1 Rewards Chances - Amazing")
 MBT3_p = st.sidebar.slider('Mystery Box Tier 3', min_value=0.00, max_value=1.00, value=0.7, step=.01, key=13292)
@@ -41,8 +41,8 @@ p8_p = st.sidebar.slider('8x8 Plot', min_value=0.00, max_value=1.00-MBT3_p, valu
 p16_p = st.sidebar.slider('16x16 Plot', min_value=0.00, max_value=1.00-(MBT3_p+p8_p), value=0.09, step=.01, key=139292)
 
 st.sidebar.markdown("## 2.2 Rewards Chances - Regular")
-MBT1 = st.sidebar.slider('Mystery Box Tier 1', min_value=0.00, max_value=1.00, value=0.33, step=.01, key=1232)
-Recipe = st.sidebar.slider('Recipe', min_value=0.00, max_value=1.00 - MBT1, value=0.33, step=.01, key=1223)
+MBT1 = st.sidebar.slider('Mystery Box Tier 1', min_value=0.00, max_value=1.00, value=1/3, step=.01, key=1232)
+Recipe = st.sidebar.slider('Recipe', min_value=0.00, max_value=1.00 - MBT1, value=1/3, step=.01, key=1223)
 
 st.sidebar.markdown("## 2.2 Rewards Chances - Poor")
 smp_p = st.sidebar.slider('Small Material Pack', min_value=0.00, max_value=1.00, value=1 / 6, step=.01, key=12321)
@@ -105,10 +105,16 @@ def master_conversion_function(usd_spent, rolls_by_usd_price, one_roll_mana_pric
 
 
 st.title(":blue[Gacha Rolls Dynamics]")
-st.write(f'''We define a master conversion function between one roll cost in USD, then in Ethereum and finally by Mana. The equivalence between Mana and hard currencies can be changed by control usage. 
-Finally we run a probability function based again on defined probabilities per reward.''')
 
 st.title("1. Master Conversion Function")
+
+st.write(f'''The equivalence between Mana and hard currencies can be changed by control usage.''')
+
+usd_spent = st.number_input('USD one player Spent (AVG)', step=1., value=100., format="%.2f", key=12112)
+rolls_by_usd_price = st.number_input('One roll equals USD', step=1., value=2.5, format="%.2f", key=122)
+#sysBP = st.number_input(label=“systolic blood pressure”,step=1.,format="%.2f")
+one_roll_mana_price = st.number_input('One roll equals Mana Units', step=1., value=10.0, format="%.2f", key=12221)
+
 st.write(f''':green[Equivalence between currencies:]
 
     - REAL: The Ethereum corresponds to {eth_rate} USD at this moment.
@@ -123,9 +129,9 @@ st.title("2. First Roll Probabilities")
 st.subheader(f" 2.0 Explanation")
 st.write(f'''The chance for each reward class is (by controls):  
         
-        - Amazing: {str(int(100 * Amazing)) + '/100'} probability
-    - Regular: {str(int(100 * Regular)) + '/100'} probability
-    - Poor: {str(100 - 100 * (Amazing + Regular))+ '/100'} probability (as complement)''')
+        - Amazing: {str(Amazing*100) +'%'} probability
+    - Regular: {str(Regular*100)+'%'} probability
+    - Poor: {str((1 - (Amazing + Regular))*100)+'%'} probability (as complement)''')
 
 fr = {
     'categories': ['Amazing', 'Regular', 'Poor'],
@@ -184,15 +190,15 @@ if n>0:
 
 if conv_fun['ROLLS'] > 0:
     st.subheader('''2.1 Example ''')
-    st.write(f''':green[As an Example, in {conv_fun['ROLLS']} rolls] the rewards are distributed as follows:''')
+    st.write(f''':green[Paid {conv_fun['ROLLS']} rolls], the rewards types are distributed as follows:''')
     st.dataframe(chart_data)
 
     plots_earn = {'8x8': plots_8, '16x16': plots_16, '32x32': plots_32}
 
+
     rtype = 'Amazing'
+    st.caption(f''':moneybag: :moneybag: :moneybag: :red[{rtype}] :moneybag: :moneybag: :moneybag:''')
     if len(new[rtype]) > 0:
-
-
         dict0 = {}
         for i in new[rtype]:
             if i not in dict0.keys():
@@ -223,12 +229,16 @@ if conv_fun['ROLLS'] > 0:
                 - Player earns by plots: {human_format(plots_earns)} USD 
     - Runiverse {'earns' if runi_earns > 0 else 'loses'} about {human_format(runi_earns)} USD''')
 
-        chart_data = pd.DataFrame(all_rewards[rtype])
 
-        st.write(f''':green[{rtype} Type] probabilities:''')
-        st.dataframe(chart_data)
+    else:
+        st.write('''In this example were no Amazing rewards.''')
+
+    chart_data = pd.DataFrame(all_rewards[rtype])
+    st.write(f''':green[{rtype} Type] probabilities:''')
+    st.dataframe(chart_data)
 
     rtype = 'Regular'
+    st.caption(f''':moneybag: :moneybag: :red[{rtype}] :moneybag: :moneybag:''')
     if len(new[rtype]) > 0:
 
         dict0 = {}
@@ -253,12 +263,15 @@ if conv_fun['ROLLS'] > 0:
         fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
-        chart_data = pd.DataFrame(all_rewards[rtype])
+    else:
+        st.write('''In this example were no Regular rewards.''')
 
-        st.write(f''':green[{rtype} Type] probabilities:''')
-        st.dataframe(chart_data)
+    chart_data = pd.DataFrame(all_rewards[rtype])
+    st.write(f''':green[{rtype} Type] probabilities:''')
+    st.dataframe(chart_data)
 
     rtype = 'Poor'
+    st.caption(f''':moneybag: :red[{rtype}] :moneybag:''')
     if len(new[rtype]) > 0:
 
         dict0 = {}
@@ -283,10 +296,12 @@ if conv_fun['ROLLS'] > 0:
         fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
-        chart_data = pd.DataFrame(all_rewards[rtype])
+    else:
+        st.write('''In this example were no Poor rewards.''')
 
-        st.write(f''':green[{rtype} Type] probabilities:''')
-        st.dataframe(chart_data)
+    chart_data = pd.DataFrame(all_rewards[rtype])
+    st.write(f''':green[{rtype} Type] probabilities:''')
+    st.dataframe(chart_data)
 
 ########################################################################################################################
 ########################################################################################################################
