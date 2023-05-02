@@ -6,7 +6,7 @@ This code is developed in order to answer business requirements such as:
 1) Master conversion function between hard currencies and in-game currencies
 2) Modeled the reward assignation by roll up, given probabilities on each one. We use a binomial distribution function.
 3) Mathematicaly modeled the plots rewards by an hypergeometric distribution function.
-The final dashboard can be seen here: http://3.83.101.89:8501/
+The final dashboard is hosted on AWS EC2 by Streamlit and can be seen here: http://3.83.101.89:8501/
 
 ## Prerequisities
 
