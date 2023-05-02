@@ -22,7 +22,6 @@ To install the dependencies, you can simply follow this steps.
 Clone the project repository:
 ```bash
 git clone https://github.com/bisonic-official/gacha-probabilities-dashboard
-cd streamlit-example
 ```
 
 To create and activate the virtual environment, follow these steps:
@@ -61,7 +60,7 @@ To install the requirements using `pip`, once the virtual environment is active:
 
 Finally, if you want to run the main script:
 ```bash
-(streamlit)$ streamlit run app.py
+(streamlit)$ streamlit run source/app.py
 ```
 
 #### Extend code!
