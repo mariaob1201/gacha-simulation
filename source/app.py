@@ -114,19 +114,23 @@ one_roll_mana_price = st.number_input('One roll equals Mana Units', step=1., val
 st.write(f''':green[Equivalence between currencies:]
 
     - REAL: The Ethereum corresponds to {eth_rate} USD at this moment.
-    - IN GAME: Roll price is {rolls_by_usd_price} USD, or {one_roll_mana_price} Mana units (can change by control). ''')
+    - IN GAME: One Roll price is {rolls_by_usd_price} USD or {one_roll_mana_price} Mana units (can change by control).''')
 
 conv_fun = master_conversion_function(usd_spent, rolls_by_usd_price, one_roll_mana_price, eth_rate)
-df = pd.DataFrame(conv_fun, index=[0])
-st.dataframe(df)
+
+def mcf(conv_fun):
+    conversion = {'Currencies': [key for key, val in conv_fun.items()],
+            'Values': [val for key, val in conv_fun.items()]}
+    df = pd.DataFrame(conversion)
+    st.dataframe(df)
+
+
+mcf(conv_fun)
+
+#df = pd.DataFrame(conversion, index=[0])
+#st.dataframe(df)
 
 st.title("2. Reward Types")
-st.subheader(f" 2.0 Explanation")
-st.write(f'''The chance for each reward class is (by controls):  
-
-        - Amazing: {str(Amazing * 100) + '%'} probability
-    - Regular: {str(Regular * 100) + '%'} probability
-    - Poor: {str((1 - (Amazing + Regular)) * 100) + '%'} probability (as complement)''')
 
 fr = {
     'categories': ['Amazing', 'Regular', 'Poor'],
@@ -140,9 +144,139 @@ plots_32 = plots_earned[3]
 
 chart_data = pd.DataFrame(
     {'Rewards_Types': ['Poor', 'Regular', 'Amazing'],
-     'Quantity': [len(new['Poor']), len(new['Regular']), len(new['Amazing'])]})
+    'Probabilities':[Amazing, Regular, 1-(Amazing+Regular)],
+     'Number of rewards after rolls': [len(new['Poor']), len(new['Regular']), len(new['Amazing'])]
+    })
 
 n = conv_fun['ROLLS'] * n_players
+
+if conv_fun['ROLLS'] > 0:
+    st.subheader('''2.1 Example (one player) ''')
+    st.write(f'''At the begining, we have three types of rewards: Amazing, Regular and Poor by a given probabilities. In this example case, :green[One single player Paid {conv_fun['ROLLS']} rolls], then the given rewards are distributed as follows:''')
+    st.dataframe(chart_data)
+
+    plots_earn = {'8x8': plots_8, '16x16': plots_16, '32x32': plots_32}
+
+    rtype = 'Amazing'
+    st.caption(f''':moneybag: :moneybag: :moneybag: :red[{rtype}] :moneybag: :moneybag: :moneybag:''')
+    chart_data = pd.DataFrame(all_rewards[rtype])
+    st.write(f''':green[{rtype} Type] Rewards probabilities:''')
+    st.dataframe(chart_data)
+    if len(new[rtype]) > 0:
+        dict0 = {}
+        for i in new[rtype]:
+            if i not in dict0.keys():
+                dict0[i] = 1
+            else:
+                dict0[i] += 1
+
+        sorted_ = sorted(dict0.items(), key=lambda x: x[0])
+        dict1 = dict(sorted_)
+        dict_f = {'Rewards': dict1.keys(), 'Quantity': dict1.values()}
+
+        df = pd.DataFrame(dict_f)
+
+        fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
+                     title=f"""{rtype} Rewards on {conv_fun['ROLLS']} ROLLS""",
+                     height=400
+                     )
+        fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+
+        if plots_earned[0] > 0:
+            plots_earns = plot_base_price * ((plots_8 * reserve_multiplier['8x8']) + (
+                    plots_16 * reserve_multiplier['16x16']) + (plots_32 * reserve_multiplier['32x32']))
+            runi_earns = conv_fun['USD'] - plots_earns
+            st.write(f''':green[Player earns {int(plots_earned[0])} plots] as follows: {plots_earn}. That means in USD: 
+
+                - Player earns by plots: {human_format(plots_earns)} USD 
+    - Runiverse {'earns' if runi_earns > 0 else 'loses'} about {human_format(runi_earns)} USD''')
+
+
+    else:
+        st.write('''In this example were no Amazing rewards.''')
+
+
+    rtype = 'Regular'
+    st.caption(f''':moneybag: :moneybag: :red[{rtype}] :moneybag: :moneybag:''')
+    chart_data = pd.DataFrame(all_rewards[rtype])
+    st.write(f''':green[{rtype} Type] Rewards probabilities:''')
+    st.dataframe(chart_data)
+    if len(new[rtype]) > 0:
+
+        dict0 = {}
+        for i in new[rtype]:
+            if i not in dict0.keys():
+                dict0[i] = 1
+            else:
+                dict0[i] += 1
+
+        sorted_ = sorted(dict0.items(), key=lambda x: x[0])
+        dict1 = dict(sorted_)
+
+        dict_f = {'Rewards': dict1.keys(), 'Quantity': dict1.values()}
+
+        df = pd.DataFrame(dict_f)
+        # st.dataframe(df)
+        fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
+                     title=f"""{rtype} Rewards on {conv_fun['ROLLS']} ROLLS""",
+                     height=400
+                     )
+        fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+
+    else:
+        st.write('''In this example were no Regular rewards.''')
+
+
+
+    rtype = 'Poor'
+    st.caption(f''':moneybag: :red[{rtype}] :moneybag:''')
+    chart_data = pd.DataFrame(all_rewards[rtype])
+    st.write(f''':green[{rtype} Type] Rewards probabilities:''')
+    st.dataframe(chart_data)
+    if len(new[rtype]) > 0:
+
+        dict0 = {}
+        for i in new[rtype]:
+            if i not in dict0.keys():
+                dict0[i] = 1
+            else:
+                dict0[i] += 1
+
+        sorted_ = sorted(dict0.items(), key=lambda x: x[0])
+        dict1 = dict(sorted_)
+
+        dict_f = {'Rewards': dict1.keys(), 'Quantity': dict1.values()}
+
+        df = pd.DataFrame(dict_f)
+        # st.dataframe(df)
+        fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
+                     title=f"""{rtype} Rewards on {conv_fun['ROLLS']} ROLLS""",
+                     height=400
+                     )
+        fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+
+    else:
+        st.write('''In this example were no Poor rewards.''')
+
+
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+
+st.subheader(f" 2.2 Probability Distribution Function")
+st.write(f'''The chance for each reward class is (by controls):  
+
+        - Amazing: {str(Amazing * 100) + '%'} probability
+    - Regular: {str(Regular * 100) + '%'} probability
+    - Poor: {str((1 - (Amazing + Regular)) * 100) + '%'} probability (as complement)''')
+
+
 
 if n > 0:
     def binomial_plot(n, p, title):
@@ -180,123 +314,7 @@ if n > 0:
     if 1 - (Amazing + Regular) > 0:
         binomial_plot(n, 1 - (Amazing + Regular), f'''Poor Reward - Chances on {n} rolls''')
 
-########################################################################################################################
-########################################################################################################################
-########################################################################################################################
 
-if conv_fun['ROLLS'] > 0:
-    st.subheader('''2.1 Example one player ''')
-    st.write(f''':green[One player Paid {conv_fun['ROLLS']} rolls], then the rewards types are distributed as follows:''')
-    st.dataframe(chart_data)
-
-    plots_earn = {'8x8': plots_8, '16x16': plots_16, '32x32': plots_32}
-
-    rtype = 'Amazing'
-    st.caption(f''':moneybag: :moneybag: :moneybag: :red[{rtype}] :moneybag: :moneybag: :moneybag:''')
-    if len(new[rtype]) > 0:
-        dict0 = {}
-        for i in new[rtype]:
-            if i not in dict0.keys():
-                dict0[i] = 1
-            else:
-                dict0[i] += 1
-
-        sorted_ = sorted(dict0.items(), key=lambda x: x[0])
-        dict1 = dict(sorted_)
-        dict_f = {'Rewards': dict1.keys(), 'Quantity': dict1.values()}
-
-        df = pd.DataFrame(dict_f)
-
-        fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
-                     title=f"""{rtype} Rewards""",
-                     height=400
-                     )
-        fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
-        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
-
-        if plots_earned[0] > 0:
-            plots_earns = plot_base_price * ((plots_8 * reserve_multiplier['8x8']) + (
-                    plots_16 * reserve_multiplier['16x16']) + (plots_32 * reserve_multiplier['32x32']))
-            runi_earns = conv_fun['USD'] - plots_earns
-            st.write(f''':green[Player earns {int(plots_earned[0])} plots] as follows: {plots_earn}. That means in USD: 
-
-                - Player earns by plots: {human_format(plots_earns)} USD 
-    - Runiverse {'earns' if runi_earns > 0 else 'loses'} about {human_format(runi_earns)} USD''')
-
-
-    else:
-        st.write('''In this example were no Amazing rewards.''')
-
-    chart_data = pd.DataFrame(all_rewards[rtype])
-    st.write(f''':green[{rtype} Type] probabilities:''')
-    st.dataframe(chart_data)
-
-    rtype = 'Regular'
-    st.caption(f''':moneybag: :moneybag: :red[{rtype}] :moneybag: :moneybag:''')
-    if len(new[rtype]) > 0:
-
-        dict0 = {}
-        for i in new[rtype]:
-            if i not in dict0.keys():
-                dict0[i] = 1
-            else:
-                dict0[i] += 1
-
-        sorted_ = sorted(dict0.items(), key=lambda x: x[0])
-        dict1 = dict(sorted_)
-
-        dict_f = {'Rewards': dict1.keys(), 'Quantity': dict1.values()}
-
-        df = pd.DataFrame(dict_f)
-        # st.dataframe(df)
-        fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
-                     title=f"""{rtype} Rewards""",
-                     height=400
-                     )
-        fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
-        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
-
-    else:
-        st.write('''In this example were no Regular rewards.''')
-
-    chart_data = pd.DataFrame(all_rewards[rtype])
-    st.write(f''':green[{rtype} Type] probabilities:''')
-    st.dataframe(chart_data)
-
-    rtype = 'Poor'
-    st.caption(f''':moneybag: :red[{rtype}] :moneybag:''')
-    if len(new[rtype]) > 0:
-
-        dict0 = {}
-        for i in new[rtype]:
-            if i not in dict0.keys():
-                dict0[i] = 1
-            else:
-                dict0[i] += 1
-
-        sorted_ = sorted(dict0.items(), key=lambda x: x[0])
-        dict1 = dict(sorted_)
-
-        dict_f = {'Rewards': dict1.keys(), 'Quantity': dict1.values()}
-
-        df = pd.DataFrame(dict_f)
-        # st.dataframe(df)
-        fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
-                     title=f"""{rtype} Rewards""",
-                     height=400
-                     )
-        fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
-        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
-
-    else:
-        st.write('''In this example were no Poor rewards.''')
-
-    chart_data = pd.DataFrame(all_rewards[rtype])
-    st.write(f''':green[{rtype} Type] probabilities:''')
-    st.dataframe(chart_data)
 
 ########################################################################################################################
 ########################################################################################################################
@@ -304,7 +322,7 @@ if conv_fun['ROLLS'] > 0:
 
 try:
     st.title("3. Amazing Rewards - Probability Distribution Function")
-
+    st.write(f'''With focus on :green[Plots Rewards] we fit an probability distribution function to explain how many plots we give to players after certain number of rolls.''')
     st.subheader("3.1 Explanation")
     st.write(f'''At the beginning, there are {N} plots as rewards distributed as follows:
 
@@ -319,31 +337,36 @@ once one is giving as a reward, the collection decreases (no replacement) and th
     plots_earned_by_rolls = plots_earn[0]
 
     ether = "{:.2f}".format(tolls_per_tspent['ETH'])
+    players_earnings_usd = plot_base_price * (
+                (plots_earn[1] * reserve_multiplier['8x8']) + (plots_earn[2] * reserve_multiplier['16x16']) + (
+                    plots_earn[-1] * reserve_multiplier['32x32']))
 
     st.write(
-        f'''(3 Plot Chances - Control) {n_players} players, each of them spending {usd_spent} USD on average means:''')
+        f'''{n_players} players, each of them spending {usd_spent} USD on average means:''')
 
     if plots_earned_by_rolls > 0:
+        st.write(f''':green[Runiverse incomes:] (Control 1 conversion rates)
+
+                    - {human_format(total_spent)} USD
+    - {ether} ETHER''')
+
 
         st.write(f''':green[Players Earnings:]
 
         - {tolls_per_tspent['ROLLS']} rolls (In average {int(tolls_per_tspent['ROLLS'] / n_players)} per player)
     - {tolls_per_tspent['Mana']} Mana Units 
-    - {plots_earned_by_rolls} plots ({human_format(480 * ((plots_earn[1] * reserve_multiplier['8x8']) + (plots_earn[2] * reserve_multiplier['16x16']) + (plots_earn[-1] * reserve_multiplier['32x32'])))} USD) as a reward as follows:
+    - {plots_earned_by_rolls} plots ({human_format(players_earnings_usd)} USD) as a reward as follows:
         - 8x8: {plots_earn[1]} plots ({480 * plots_earn[1] * reserve_multiplier['8x8']} USD)
         - 16x16: {plots_earn[2]} plots ({480 * plots_earn[2] * reserve_multiplier['16x16']} USD)
         - 32x32: {plots_earn[3]} plots ({480 * plots_earn[3] * reserve_multiplier['32x32']} USD) ''')
 
-        st.write(f''':green[Runiverse incomes:] (Control 1 conversion rates)
-
-            - {human_format(total_spent)} USD
-    - {ether} ETHER''')
+        st.write(f''':red[Balance: {':arrow_up:' if total_spent-players_earnings_usd>0 else ':arrow_down:'} {human_format(total_spent-players_earnings_usd)} USD]''')
 
         K = plots_earn[0]
         if plots_earn[0] > 0:
             st.subheader(f"3.2 Probability to have plot types as a reward for the given number of plots {(K)}.")
             st.write(
-                f''':green[We use an hyper geometric distribution function to our dynamics.] Probabilities are given on {K} events.''')
+                f''':green[Probabilities are given on {K} events.] We use an hyper geometric distribution function to our dynamics.''')
 
             ps = '8x8'
             n = p_8
