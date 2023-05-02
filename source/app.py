@@ -27,11 +27,11 @@ st.sidebar.markdown("## 1. Number of players")
 n_players = st.sidebar.slider('Number of players', min_value=1, max_value=100000, value=80, step=1, key=121117711123)
 
 st.sidebar.markdown("## 2. Reward Types")
-Amazing_p = st.sidebar.slider('Amazing reward chance on 100 opportunities',
+Amazing_p = st.sidebar.slider('Amazing reward chance (on 100 opportunities)',
                               min_value=0.00, max_value=10.00, value=0.50, step=.01, key=1)
 Amazing = Amazing_p / 100
 
-Regular_p = st.sidebar.slider('Regular reward chance on 100 opportunities', min_value=0.00, max_value=100.00,
+Regular_p = st.sidebar.slider('Regular reward chance (on 100 opportunities)', min_value=0.00, max_value=100.00,
                               value=2.0, step=.01, key=11)
 Regular = Regular_p / 100
 ###################### REWARDS
