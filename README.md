@@ -61,7 +61,7 @@ To install the requirements using `pip`, once the virtual environment is active:
 
 Finally, if you want to run the main script:
 ```bash
-(streamlit)$ streamlit run source/app.py
+(streamlit)$ streamlit run source/main.py
 ```
 
 #### Extend code!
