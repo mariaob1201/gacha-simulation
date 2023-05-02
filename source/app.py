@@ -23,7 +23,7 @@ N = (p_32 + p_16 + p_8)
 # st.sidebar.markdown("## 1. Master Conversion Formula")
 # usd_spent = st.sidebar.slider('Player Spent (USD)', min_value=0.00, max_value=1000.00, value=100.00, step=.01, key=111)
 ###################### REWARDS
-st.sidebar.markdown("## 1. Number of players")
+st.sidebar.markdown("## 1. Controls")
 n_players = st.sidebar.slider('Number of players', min_value=1, max_value=100000, value=80, step=1, key=121117711123)
 
 st.sidebar.markdown("## 2. Reward Types")

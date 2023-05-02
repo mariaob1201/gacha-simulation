@@ -1,6 +1,6 @@
 
 # Name of this action
-name: Automatic Deploy Gacha Dynamics
+name: Automatic Deploy Gacha Dynamics Dashboard
 
 # Event triggers on pull request event
 # For more detail visit https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#on
