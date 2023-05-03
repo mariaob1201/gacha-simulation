@@ -91,9 +91,10 @@ one_roll_mana_price = st.number_input('One roll equals Mana Units', step=1., val
 
 
 
-conversionfunction = CurrenciesConversion(url, rolls_by_usd_price, one_roll_mana_price)
-eth_rate = conversionfunction.ether_to_usd()
-
+conversionfunction = CurrenciesConversion(rolls_by_usd_price, one_roll_mana_price)
+eth_rate_f = conversionfunction.ether_to_usd(url)
+eth_rate = eth_rate_f['USD']
+print('Exchange rate -->', eth_rate_f, '---> ', exchange, '------> ',eth_rate)
 
 
 st.write(f''':green[Equivalence between currencies:]

@@ -10,11 +10,11 @@ import logging
 
 
 class CurrenciesConversion():
-    def __init__(self, url, rolls_by_usd_price, one_roll_mana_price):
-        self.url = url
+    def __init__(self, rolls_by_usd_price, one_roll_mana_price):
+        #self.url = url
         self.rolls_by_usd_price = rolls_by_usd_price
         self.one_roll_mana_price = one_roll_mana_price
-    def ether_to_usd(self):
+    def ether_to_usd(self, url: str) -> object:
         '''
 
         :param url: api request url
@@ -22,17 +22,16 @@ class CurrenciesConversion():
         '''
         try:
             response = requests.get(
-                self.url,
+                url,
                 headers={"Accept": "application/json"},
             )
             data = response.json()
-            USD = data['USD']
 
         except Exception as e:
             logging.error(f'''In ether to usd function <<<<< {e} >>>>>>''')
-            USD = None
+            data = None
 
-        return USD
+        return data
 
     def master_conversion_function(self, eth_rate, usd_spent):
         """
@@ -83,7 +82,7 @@ class RollOut():
     def __init__(self, N):
         """
 
-        :param N: Times the roll out is mande
+        :param N: Times the roll out was called
         """
         self.N=N
     def first_roll_out_dynamics(self, die, probabilities, flag):
@@ -91,7 +90,7 @@ class RollOut():
             Roll out simplification
             :param die: vector of events that can occur
             :param probabilities: vector with probabilities of each element in die vector
-            :param flag: Times the roll out is mande N or 1, last value is for sub cases
+            :param flag: Times the roll out was called N or 1, 1 value is for gacha specific rewards
             :returns: a vector of occurrences
         '''
         try:
