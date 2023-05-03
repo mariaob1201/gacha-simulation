@@ -20,8 +20,7 @@ p_16 = 1800
 p_8 = 6000
 N = (p_32 + p_16 + p_8)
 
-# st.sidebar.markdown("## 1. Master Conversion Formula")
-# usd_spent = st.sidebar.slider('Player Spent (USD)', min_value=0.00, max_value=1000.00, value=100.00, step=.01, key=111)
+
 ###################### REWARDS
 st.sidebar.markdown("## 1. Controls")
 n_players = st.sidebar.slider('Number of players', min_value=1, max_value=100000, value=80, step=1, key=121117711123)
@@ -72,32 +71,11 @@ all_rewards = {'Amazing': {'Types': ['Mystery Box Tier 3', 'Plot 8*8', 'Plot 16*
 ##################################################################################################################
 #################################MASTER CONVERSION FUNCTION ######################################################
 ##################################################################################################################
-def ether_to_usd(url):
-    try:
-        response = requests.get(
-            url,
-            headers={"Accept": "application/json"},
-        )
-        data = response.json()
-        USD = data['USD']
-
-    except Exception as e:
-        logging.error(f'''In ether to usd function {e}''')
-        USD = None
-
-    return USD
 
 
-eth_rate = ether_to_usd(url)
 
 
-def master_conversion_function(usd_spent, rolls_by_usd_price, one_roll_mana_price, eth_rate):
-    conversion = {'USD': usd_spent,
-                  'ETH': (usd_spent / eth_rate),
-                  'ROLLS': int(usd_spent / rolls_by_usd_price),
-                  'Mana': one_roll_mana_price * int(usd_spent / rolls_by_usd_price)}
 
-    return conversion
 
 
 st.title(":blue[Gacha Rolls Dynamics]")
@@ -111,24 +89,20 @@ rolls_by_usd_price = st.number_input('One roll equals USD', step=1., value=2.5, 
 # sysBP = st.number_input(label=“systolic blood pressure”,step=1.,format="%.2f")
 one_roll_mana_price = st.number_input('One roll equals Mana Units', step=1., value=10.0, format="%.2f", key=12221)
 
+
+
+conversionfunction = CurrenciesConversion(url, rolls_by_usd_price, one_roll_mana_price)
+eth_rate = conversionfunction.ether_to_usd()
+
+
+
 st.write(f''':green[Equivalence between currencies:]
 
     - REAL: The Ethereum corresponds to {eth_rate} USD at this moment.
     - IN GAME: One Roll price is {rolls_by_usd_price} USD or {one_roll_mana_price} Mana units (can change by control).''')
 
-conv_fun = master_conversion_function(usd_spent, rolls_by_usd_price, one_roll_mana_price, eth_rate)
+conv_fun, rolls = conversionfunction.master_conversion_function(eth_rate, usd_spent)
 
-def mcf(conv_fun):
-    conversion = {'Currencies': [key for key, val in conv_fun.items()],
-            'Values': [val for key, val in conv_fun.items()]}
-    df = pd.DataFrame(conversion)
-    st.dataframe(df)
-
-
-mcf(conv_fun)
-
-#df = pd.DataFrame(conversion, index=[0])
-#st.dataframe(df)
 
 st.title("2. Reward Types")
 
@@ -137,7 +111,8 @@ fr = {
     'probabilities': [Amazing, Regular, 1 - (Regular + Amazing)]
 }
 
-new, plots_earned = complete_dynamics(conv_fun['ROLLS'], fr, all_rewards)
+dynamics = RollOut(rolls)
+new, plots_earned = dynamics.complete_dynamics(fr, all_rewards)
 plots_8 = plots_earned[1]
 plots_16 = plots_earned[2]
 plots_32 = plots_earned[3]
@@ -148,11 +123,11 @@ chart_data = pd.DataFrame(
      'Number of rewards after rolls': [len(new['Poor']), len(new['Regular']), len(new['Amazing'])]
     })
 
-n = conv_fun['ROLLS'] * n_players
+n = rolls * n_players
 
-if conv_fun['ROLLS'] > 0:
+if rolls > 0:
     st.subheader('''2.1 Example (one player) ''')
-    st.write(f'''At the begining, we have three types of rewards: Amazing, Regular and Poor by a given probabilities. In this example case, :green[One single player Paid {conv_fun['ROLLS']} rolls], then the given rewards are distributed as follows:''')
+    st.write(f'''At the begining, we have three types of rewards: Amazing, Regular and Poor by a given probabilities. In this example case, :green[One single player Paid {rolls} rolls], then the given rewards are distributed as follows:''')
     st.dataframe(chart_data)
 
     plots_earn = {'8x8': plots_8, '16x16': plots_16, '32x32': plots_32}
@@ -163,36 +138,7 @@ if conv_fun['ROLLS'] > 0:
     st.write(f''':green[{rtype} Type] Rewards probabilities:''')
     st.dataframe(chart_data)
     if len(new[rtype]) > 0:
-        dict0 = {}
-        for i in new[rtype]:
-            if i not in dict0.keys():
-                dict0[i] = 1
-            else:
-                dict0[i] += 1
-
-        sorted_ = sorted(dict0.items(), key=lambda x: x[0])
-        dict1 = dict(sorted_)
-        dict_f = {'Rewards': dict1.keys(), 'Quantity': dict1.values()}
-
-        df = pd.DataFrame(dict_f)
-
-        fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
-                     title=f"""{rtype} Rewards on {conv_fun['ROLLS']} ROLLS""",
-                     height=400
-                     )
-        fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
-        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
-
-        if plots_earned[0] > 0:
-            plots_earns = plot_base_price * ((plots_8 * reserve_multiplier['8x8']) + (
-                    plots_16 * reserve_multiplier['16x16']) + (plots_32 * reserve_multiplier['32x32']))
-            runi_earns = conv_fun['USD'] - plots_earns
-            st.write(f''':green[Player earns {int(plots_earned[0])} plots] as follows: {plots_earn}. That means in USD: 
-
-                - Player earns by plots: {human_format(plots_earns)} USD 
-    - Runiverse {'earns' if runi_earns > 0 else 'loses'} about {human_format(runi_earns)} USD''')
-
+        function(new,rtype, plots_earned, plot_base_price, plots_8, plots_16, plots_32, rolls, reserve_multiplier,conv_fun, plots_earn)
 
     else:
         st.write('''In this example were no Amazing rewards.''')
@@ -204,32 +150,10 @@ if conv_fun['ROLLS'] > 0:
     st.write(f''':green[{rtype} Type] Rewards probabilities:''')
     st.dataframe(chart_data)
     if len(new[rtype]) > 0:
-
-        dict0 = {}
-        for i in new[rtype]:
-            if i not in dict0.keys():
-                dict0[i] = 1
-            else:
-                dict0[i] += 1
-
-        sorted_ = sorted(dict0.items(), key=lambda x: x[0])
-        dict1 = dict(sorted_)
-
-        dict_f = {'Rewards': dict1.keys(), 'Quantity': dict1.values()}
-
-        df = pd.DataFrame(dict_f)
-        # st.dataframe(df)
-        fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
-                     title=f"""{rtype} Rewards on {conv_fun['ROLLS']} ROLLS""",
-                     height=400
-                     )
-        fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
-        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+        function(new,rtype, plots_earned, plot_base_price, plots_8, plots_16, plots_32, rolls, reserve_multiplier,conv_fun, plots_earn)
 
     else:
         st.write('''In this example were no Regular rewards.''')
-
 
 
     rtype = 'Poor'
@@ -238,35 +162,14 @@ if conv_fun['ROLLS'] > 0:
     st.write(f''':green[{rtype} Type] Rewards probabilities:''')
     st.dataframe(chart_data)
     if len(new[rtype]) > 0:
-
-        dict0 = {}
-        for i in new[rtype]:
-            if i not in dict0.keys():
-                dict0[i] = 1
-            else:
-                dict0[i] += 1
-
-        sorted_ = sorted(dict0.items(), key=lambda x: x[0])
-        dict1 = dict(sorted_)
-
-        dict_f = {'Rewards': dict1.keys(), 'Quantity': dict1.values()}
-
-        df = pd.DataFrame(dict_f)
-        # st.dataframe(df)
-        fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
-                     title=f"""{rtype} Rewards on {conv_fun['ROLLS']} ROLLS""",
-                     height=400
-                     )
-        fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
-        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+        function(new, rtype, plots_earned, plot_base_price, plots_8, plots_16, plots_32, rolls, reserve_multiplier,conv_fun, plots_earn)
 
     else:
         st.write('''In this example were no Poor rewards.''')
 
 
 ########################################################################################################################
-########################################################################################################################
+################################2.2 Probability Distribution Function ##################################################
 ########################################################################################################################
 
 st.subheader(f" 2.2 Probability Distribution Function")
@@ -277,47 +180,23 @@ st.write(f'''The chance for each reward class is (by controls):
     - Poor: {str((1 - (Amazing + Regular)) * 100) + '%'} probability (as complement)''')
 
 
-
 if n > 0:
-    def binomial_plot(n, p, title):
-
-        # defining list of r values
-        r_values = list(range(n + 1))
-        # list of pmf values
-        dist = [binom.pmf(r, n, p) for r in r_values]
-        mean = n * p
-        variance = n * p * (1 - p)
-        df = pd.DataFrame({f"Number of events": r_values, 'Probability': dist})
-        fig = px.scatter(df, x=f"Number of events", y="Probability",
-                         title=f"{title}")
-        fig.add_vline(x=mean, line_width=3, line_dash="dash", line_color="green",
-                      annotation_text=f'''Mean {"{:.2f}".format(mean)}''', annotation_position="bottom left")
-        fig.add_vrect(x0=mean - 2 * abs(np.sqrt(variance)), x1=mean + 2 * abs(np.sqrt(variance)),
-                      annotation_text=f'''CI : [{"{:.2f}".format(mean - 2 * abs(np.sqrt(variance)))}, {"{:.2f}".format(mean + 2 * abs(np.sqrt(variance)))}]''',
-                      annotation_position="top right",
-                      fillcolor="red", opacity=0.25, line_width=0
-                      )
-        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
-        st.write(f'''Statistics are:
-
-                            - The mean is having {"{:.2f}".format(mean)} rewards of this type
-    - 95% Confidence interval: [{"{:.2f}".format(max(0, mean - 2 * abs(np.sqrt(variance))))}, {"{:.2f}".format(mean + 2 * abs(np.sqrt(variance)))}]
-    - Variance {"{:.2f}".format(variance)}''')
-
-    st.write(f'''By {n_players} player{'s' if n_players>1 else ''}, {conv_fun['ROLLS']} rolls each of them (:green[{n} total rolls]), we have.''')
+    binomial_pt = BinomialDistributionFunction(n)
+    st.write(f'''By {n_players} player{'s' if n_players>1 else ''}, {rolls} rolls each of them (:green[{n} total rolls]), we have.''')
     if Amazing > 0:
-        binomial_plot(n, Amazing, f'''Amazing Reward - Chances on {n} rolls''')
+        binomial_pt.binomial_plot(Amazing, f'''Amazing Reward - Chances on {n} rolls''')
 
     if Regular > 0:
-        binomial_plot(n, Regular, f'''Regular Reward - Chances on {n} rolls''')
+        binomial_pt.binomial_plot(Regular, f'''Regular Reward - Chances on {n} rolls''')
 
     if 1 - (Amazing + Regular) > 0:
-        binomial_plot(n, 1 - (Amazing + Regular), f'''Poor Reward - Chances on {n} rolls''')
+        binomial_pt.binomial_plot(1 - (Amazing + Regular), f'''Poor Reward - Chances on {n} rolls''')
 
-
+else:
+    st.write(f'''ZERO rolls''')
 
 ########################################################################################################################
-########################################################################################################################
+####################### Amazing Rewards - Probability Distribution Function on plots ###################################
 ########################################################################################################################
 
 try:
@@ -331,9 +210,17 @@ try:
     - 32x32: {round(100 * p_32 / N)} % ({p_32} plots)
 once one is giving as a reward, the collection decreases (no replacement) and then its probability changes.''')
 
-    total_spent = n_players * usd_spent
-    tolls_per_tspent = master_conversion_function(total_spent, rolls_by_usd_price, one_roll_mana_price, eth_rate)
-    dyn, plots_earn = complete_dynamics(tolls_per_tspent['ROLLS'], fr, all_rewards)
+    st.write(
+        f''':moneybag: {n_players} players, each of them spending {usd_spent} USD on average means:''')
+
+    #total_spent = n_players * usd_spent
+    #conversionfunction2 = CurrenciesConversion(url, rolls_by_usd_price, one_roll_mana_price)
+
+    tolls_per_tspent, totalrolls = conversionfunction.master_conversion_function(eth_rate, n_players * usd_spent)
+
+    dynamics = RollOut(totalrolls)
+    dyn, plots_earn = dynamics.complete_dynamics(fr, all_rewards)
+
     plots_earned_by_rolls = plots_earn[0]
 
     ether = "{:.2f}".format(tolls_per_tspent['ETH'])
@@ -341,72 +228,43 @@ once one is giving as a reward, the collection decreases (no replacement) and th
                 (plots_earn[1] * reserve_multiplier['8x8']) + (plots_earn[2] * reserve_multiplier['16x16']) + (
                     plots_earn[-1] * reserve_multiplier['32x32']))
 
-    st.write(
-        f'''{n_players} players, each of them spending {usd_spent} USD on average means:''')
+
 
     if plots_earned_by_rolls > 0:
-        st.write(f''':green[Runiverse incomes:] (Control 1 conversion rates)
+        #Earnings player vs Runiverse
+        st.write(f''':house: :green[Runiverse incomes:] 
 
-                    - {human_format(total_spent)} USD
+                    - {human_format(n_players * usd_spent)} USD
     - {ether} ETHER''')
 
 
-        st.write(f''':green[Players Earnings:]
+        st.write(f''':video_game: :green[Players Earnings:]
 
-        - {tolls_per_tspent['ROLLS']} rolls (In average {int(tolls_per_tspent['ROLLS'] / n_players)} per player)
-    - {tolls_per_tspent['Mana']} Mana Units 
+        - {totalrolls} rolls (In average {int(totalrolls/ n_players)} per player)
+    - {human_format(tolls_per_tspent['Mana'])} Mana Units 
     - {plots_earned_by_rolls} plots ({human_format(players_earnings_usd)} USD) as a reward as follows:
-        - 8x8: {plots_earn[1]} plots ({480 * plots_earn[1] * reserve_multiplier['8x8']} USD)
-        - 16x16: {plots_earn[2]} plots ({480 * plots_earn[2] * reserve_multiplier['16x16']} USD)
-        - 32x32: {plots_earn[3]} plots ({480 * plots_earn[3] * reserve_multiplier['32x32']} USD) ''')
+        - 8x8: {plots_earn[1]} plots ({plot_base_price * plots_earn[1] * reserve_multiplier['8x8']} USD)
+        - 16x16: {plots_earn[2]} plots ({plot_base_price * plots_earn[2] * reserve_multiplier['16x16']} USD)
+        - 32x32: {plots_earn[3]} plots ({plot_base_price * plots_earn[3] * reserve_multiplier['32x32']} USD) ''')
 
-        st.write(f''':red[Balance: {':arrow_up:' if total_spent-players_earnings_usd>0 else ':arrow_down:'} {human_format(total_spent-players_earnings_usd)} USD]''')
+        st.write(f''':red[Balance: {':arrow_up:' if (n_players * usd_spent)-players_earnings_usd>0 else ':arrow_down:'} {human_format((n_players * usd_spent)-players_earnings_usd)} USD]''')
 
         K = plots_earn[0]
         if plots_earn[0] > 0:
             st.subheader(f"3.2 Probability to have plot types as a reward for the given number of plots {(K)}.")
             st.write(
-                f''':green[Probabilities are given on {K} events.] We use an hyper geometric distribution function to our dynamics.''')
+                f''':green[Probabilities are given on {K} events.] \n
+                We use an hyper geometric distribution function to our dynamics.''')
+            hyp_pl = HypergeometricDistributionFunction(K, N)
+            hyp_pl.plots_stat('8x8', p_8)
 
-            ps = '8x8'
-            n = p_8
-            mean = n * K / N
-            variance = n * K * (N - n) * (N - K) / ((N * N * (N - 1)))
-            std = np.sqrt(variance)
-            hypergeom_plot(N, n, K, ps, mean, std)
-            st.write(f''':green[{ps} plots] After {K} events Statistics are:
+            hyp_pl.plots_stat('16x16', p_16)
 
-                - The mean is having {"{:.2f}".format(mean)} plots of that type
-    - 95% Confidence interval: [{"{:.2f}".format(max(0, mean - 2 * abs(std)))}, {"{:.2f}".format(mean + 2 * abs(std))}] plots of that type
-    - Variance {"{:.2f}".format(variance)}''')
-
-            ps = '16x16'
-            n = p_16
-            mean = n * K / N
-            variance = n * K * (N - n) * (N - K) / ((N * N * (N - 1)))
-            std = np.sqrt(variance)
-            hypergeom_plot(N, n, K, ps, mean, std)
-            st.write(f''':green[{ps} plots] After {K} events Statistics are:
-
-                    - The mean is having {"{:.2f}".format(mean)} plots of that type
-    - 95% Confidence interval: [{"{:.2f}".format(max(0, mean - 2 * abs(std)))}, {"{:.2f}".format(mean + 2 * abs(std))}] plots of that type
-    - Variance {"{:.2f}".format(variance)}''')
-
-            ps = '32x32'
-            n = p_32
-            mean = n * K / N
-            variance = n * K * (N - n) * (N - K) / ((N * N * (N - 1)))
-            std = np.sqrt(variance)
-            hypergeom_plot(N, n, K, ps, mean, std)
-            st.write(f''':green[{ps} plots] After {K} events Statistics are:
-
-                    - The mean is having {"{:.2f}".format(mean)} plots of that type
-    - 95% Confidence interval: [{"{:.2f}".format(max(0, mean - 2 * abs(std)))}, {"{:.2f}".format(mean + 2 * abs(std))}] plots of that type
-    - Variance {"{:.2f}".format(variance)}''')
+            hyp_pl.plots_stat('32x32', p_32)
 
     else:
         st.write(''':red[No plots were given by this spent and number of players]''')
 
 except Exception as e:
-    logging.error(f'''Error {e} in 3rd section ''')
+    logging.error(f'''Error----> {e} <--- in 3rd section ''')
     pass
