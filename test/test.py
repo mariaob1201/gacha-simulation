@@ -17,7 +17,7 @@ class TestClass(unittest.TestCase):
         input_set = {'array': ['test1','test2'],
                     'probabilities':[1,0]}
         expected = ['test1']
-        self.assertEqual(rolls_out.first_roll_out_dynamics(input_set['array'], input_set['probabilities'], True), expected, "Should be 'test1'")
+        self.assertEqual(rolls_out.first_roll_out_dynamics(input_set['array'], input_set['probabilities'], True), expected, "Should be ['test1']")
 
     def test_complete_dynamics_ou1(self):
         rolls_out = auxiliar_functions2.RollOut(1)
