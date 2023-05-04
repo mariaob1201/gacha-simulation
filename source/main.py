@@ -6,7 +6,7 @@ from auxiliar_functions import *
 import plotly.express as px
 from scipy.stats import binom
 
-url = "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"
+
 
 reserve_multiplier = {'8x8': 1,
                       '16x16': 2.75,
@@ -90,11 +90,9 @@ rolls_by_usd_price = st.number_input('One roll equals USD', step=1., value=2.5, 
 one_roll_mana_price = st.number_input('One roll equals Mana Units', step=1., value=10.0, format="%.2f", key=12221)
 
 
+eth_rate = ether_to_usd('USD')
+conversionfunction = CurrenciesConversion(eth_rate, rolls_by_usd_price, one_roll_mana_price)
 
-conversionfunction = CurrenciesConversion(rolls_by_usd_price, one_roll_mana_price)
-eth_rate_f = conversionfunction.ether_to_usd(url)
-eth_rate = eth_rate_f['USD']
-print('Exchange rate -->', eth_rate_f, '---> ', exchange, '------> ',eth_rate)
 
 
 st.write(f''':green[Equivalence between currencies:]
@@ -102,7 +100,7 @@ st.write(f''':green[Equivalence between currencies:]
     - REAL: The Ethereum corresponds to {eth_rate} USD at this moment.
     - IN GAME: One Roll price is {rolls_by_usd_price} USD or {one_roll_mana_price} Mana units (can change by control).''')
 
-conv_fun, rolls = conversionfunction.master_conversion_function(eth_rate, usd_spent)
+conv_fun, rolls = conversionfunction.master_conversion_function(usd_spent)
 
 
 st.title("2. Reward Types")
@@ -217,7 +215,7 @@ once one is giving as a reward, the collection decreases (no replacement) and th
     #total_spent = n_players * usd_spent
     #conversionfunction2 = CurrenciesConversion(url, rolls_by_usd_price, one_roll_mana_price)
 
-    tolls_per_tspent, totalrolls = conversionfunction.master_conversion_function(eth_rate, n_players * usd_spent)
+    tolls_per_tspent, totalrolls = conversionfunction.master_conversion_function(n_players * usd_spent)
 
     dynamics = RollOut(totalrolls)
     dyn, plots_earn = dynamics.complete_dynamics(fr, all_rewards)
