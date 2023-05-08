@@ -5,8 +5,7 @@ import requests
 from auxiliar_functions import *
 import plotly.express as px
 from scipy.stats import binom
-
-
+import time
 
 reserve_multiplier = {'8x8': 1,
                       '16x16': 2.75,
@@ -19,6 +18,7 @@ p_32 = 88
 p_16 = 1800
 p_8 = 6000
 N = (p_32 + p_16 + p_8)
+
 
 
 ###################### REWARDS

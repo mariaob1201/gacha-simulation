@@ -1,6 +1,5 @@
 import unittest
 from source.auxiliar_functions import ether_to_usd, HypergeometricDistributionFunction, human_format, RollOut, BinomialDistributionFunction
-import pytest
 
 from unittest.mock import MagicMock, patch
 
