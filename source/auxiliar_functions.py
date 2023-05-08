@@ -103,10 +103,9 @@ class RollOut():
             else:
                 tot = 1
             initiall_roll = np.random.choice(die, size=tot, p=probabilities)
-            return initiall_roll
+            return list(initiall_roll)
         except Exception as e:
-            logging.error(f'''ERROR in first_roll_out_dynamics function <<<<< {e} >>>>>>''')
-            return []
+            raise TypeError("Input should sum 1:")
 
     def complete_dynamics(self, fr, all_rewards):
         """
@@ -143,9 +142,7 @@ class RollOut():
             plots_types = [plots, plots_8, plots_16, plots_32]
             return new, plots_types
         except Exception as e:
-            logging.error(f'''ERROR in complete_dynamics function <<<<< {e} >>>>>>''')
-            return None, None
-
+            raise TypeError("complete_dynamics:", e)
 
 class HypergeometricDistributionFunction():
     def __init__(self, K, N):
@@ -188,6 +185,7 @@ class HypergeometricDistributionFunction():
 
         except Exception as e:
             logging.error(f'''ERROR in hypergeom_cdf function <<<<< {e} >>>>>>''')
+            return None
 
     def hypergeom_plot(self, N, n, K, ps, mean, std):
         '''
@@ -210,8 +208,13 @@ class HypergeometricDistributionFunction():
                           fillcolor="red", opacity=0.25, line_width=0
                           )
             st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+
         except Exception as e:
             logging.error(f'''ERROR in hypergeom_plot function <<<<< {e} >>>>>>''')
+
+    def hypergeometric_stats(self, N, n, K):
+        return {'mean': n * K / N,
+                'variance': n * K * (N - n) * (N - K) / ((N * N * (N - 1)))}
 
     def plots_stat(self, ps, n):
         """
@@ -223,17 +226,17 @@ class HypergeometricDistributionFunction():
         :return:
         """
         try:
-            N = self.N
-            K = self.K
-            mean = n * K / N
-            variance = n * K * (N - n) * (N - K) / ((N * N * (N - 1)))
+            stats_hg = self.hypergeometric_stats(self.N, n, self.K)
+            mean = stats_hg['mean']
+            variance = stats_hg['variance']
             std = np.sqrt(variance)
-            self.hypergeom_plot(N, n, K, ps, mean, std)
-            st.write(f''':green[{ps} plots] After {K} events Statistics are:
+            self.hypergeom_plot(self.N, n, self.K, ps, mean, std)
+            st.write(f''':green[{ps} plots] After {self.K} events Statistics are:
 
                             - The mean is having {"{:.2f}".format(mean)} plots of that type
     - 95% Confidence interval: [{"{:.2f}".format(max(0, mean - 2 * abs(std)))}, {"{:.2f}".format(mean + 2 * abs(std))}] plots of that type
     - Variance {"{:.2f}".format(variance)}''')
+
         except Exception as e:
             logging.error(f'''ERROR in plots_stat function <<<<< {e} >>>>>>''')
 
@@ -241,6 +244,19 @@ class HypergeometricDistributionFunction():
 class BinomialDistributionFunction():
     def __init__(self, n):
         self.n = n
+
+    def binomial_distribution(self, p):
+        try:
+            dist = [binom.pmf(r, self.n, p) for r in list(range(self.n + 1))]
+            mean = self.n * p
+            variance = self.n * p * (1 - p)
+            return {'distribution': dist,
+                    'binomial_mean': mean,
+                    'binomial_variance': variance}
+
+        except Exception as e:
+            ea('Error in binomial distribution ', e)
+            return {}
 
     def binomial_plot(self, p, title):
         """
@@ -251,11 +267,11 @@ class BinomialDistributionFunction():
         :return:
         """
         try:
-            r_values = list(range(self.n + 1))
-            dist = [binom.pmf(r, self.n, p) for r in r_values]
-            mean = self.n * p
-            variance = self.n * p * (1 - p)
-            df = pd.DataFrame({f"Number of events": r_values, 'Probability': dist})
+            bin = self.binomial_distribution(p)
+            dist = bin['distribution']
+            mean = bin['binomial_mean']
+            variance = bin['binomial_variance']
+            df = pd.DataFrame({f"Number of events": list(range(self.n + 1)), 'Probability': dist})
             fig = px.scatter(df, x=f"Number of events", y="Probability",
                              title=f"{title}")
             fig.add_vline(x=mean, line_width=3, line_dash="dash", line_color="green",
@@ -271,9 +287,9 @@ class BinomialDistributionFunction():
 - The mean is having {"{:.2f}".format(mean)} rewards of this type
 - 95% Confidence interval: [{"{:.2f}".format(max(0, mean - 2 * abs(np.sqrt(variance))))}, {"{:.2f}".format(mean + 2 * abs(np.sqrt(variance)))}]
 - Variance {"{:.2f}".format(variance)}''')
-        except Exception as e:
-            logging.error(f'''ERROR in binomial_plot function <<<<< {e} >>>>>>''')
 
+        except Exception as e:
+            raise TypeError("ERROR in binomial_plot function <<<<< {e} >>>>>>")
 
 def function(new, rtype, plots_earned, plot_base_price, plots_8, plots_16, plots_32, rolls, reserve_multiplier,
              conv_fun, plots_earn):
@@ -322,5 +338,6 @@ def function(new, rtype, plots_earned, plot_base_price, plots_8, plots_16, plots
 
                         - Player earns by plots: {human_format(plots_earns)} USD 
             - Runiverse {'earns' if runi_earns > 0 else 'loses'} about {human_format(runi_earns)} USD''')
+
     except Exception as e:
         logging.error(f'''ERROR in function <<<<< {e} >>>>>>''')
