@@ -1,24 +1,14 @@
 import unittest
+from unittest.mock import MagicMock, patch
 from source.auxiliar_functions import ether_to_usd, HypergeometricDistributionFunction, human_format, RollOut, BinomialDistributionFunction
 
-from unittest.mock import MagicMock, patch
 
+categories = ['Amazing', 'Regular', 'Poor']
+probabs = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
 
-fr_s = [{
-    'categories': ['Amazing', 'Regular', 'Poor'],
-    'probabilities': [1, 0, 0]
-},
-    {
-        'categories': ['Amazing', 'Regular', 'Poor'],
-        'probabilities': [0, 1, 0]
-    },
-{
-    'categories': ['Amazing', 'Regular', 'Poor'],
-    'probabilities': [0, 0, 1]
-}]
 
 all_rewards_set = {'Amazing': {'Types': ['Mystery Box Tier 3', 'Plot 8*8', 'Plot 16*16', 'Plot 32*32'],
-                           'Probabilities': [1,0,0,0]},
+                           'Probabilities': [0,1,0,0]},
                'Regular': {'Types': ['Mystery Box Tier 1', 'Recipe', 'Mystery Box Tier 2'],
                            'Probabilities': [1,0,0]},
                'Poor': {'Types': ['Small Material Pack', 'Medium Material Pack', 'Bountiful Material Pack',
@@ -51,7 +41,8 @@ class TestRolls(unittest.TestCase):
             input_set = i
             expected = i['array'][k]
             if k<4:
-                self.assertEqual(rolls_out.first_roll_out_dynamics(input_set['array'], input_set['probabilities'], True),
+                self.assertEqual(
+                    rolls_out.first_roll_out_dynamics(input_set['array'], input_set['probabilities'], True),
                                  [expected], f"Should be [{expected}]")
             else:
                 with self.assertRaises(TypeError, msg="Input should sum 1:"):
@@ -59,14 +50,13 @@ class TestRolls(unittest.TestCase):
 
             k += 1
 
-
     def test_complete_dynamics_ou1(self):
         rolls_out = RollOut(1)
         k=0
-        for fr in fr_s:
+        for fr in probabs:
             if k<1:
                 idx = 'Amazing'
-                rew = ['Mystery Box Tier 3']
+                rew = ['Plot 8*8']
             else:
                 if k < 2:
                     idx = 'Regular'
@@ -76,16 +66,22 @@ class TestRolls(unittest.TestCase):
                     rew = ['Small Material Pack']
 
             expected = all_rewards_set[idx]
-            self.assertEqual(rolls_out.complete_dynamics(fr, all_rewards_set)[0][idx], rew, f"Should be {rew}")
+            self.assertEqual(
+                rolls_out.complete_dynamics(
+                    dict(categories=categories, probabilities=fr), all_rewards_set)[0][idx], rew, f"Should be {rew}")
             k+=1
+
     def test_complete_dynamics_ou2(self):
         rolls_out = RollOut(2)
-        fr = fr_s[0]
-        expected = [0, 0, 0, 0]
 
-        self.assertEqual(rolls_out.complete_dynamics(fr, all_rewards_set)[-1], expected, "Should be [0, 0, 0, 0]")
+        fr = {'categories': categories,
+              'probabilities': probabs[0]}
+        expected = [2, 2, 0, 0]
+
+        self.assertEqual(rolls_out.complete_dynamics(fr, all_rewards_set)[-1], expected, "Should be [2, 2, 0, 0]")
 
         self.assertEqual(len(rolls_out.complete_dynamics(fr, all_rewards_set)[-1]), 4, "Should have len 4")
+
 
 class TestProbabilityDistributionFunction(unittest.TestCase):
     def test_hypergeom_pmf(self):
@@ -94,7 +90,8 @@ class TestProbabilityDistributionFunction(unittest.TestCase):
         draws=1
         expected_one_draw_prob = A/N
         hyperg = HypergeometricDistributionFunction(A, N)
-        self.assertEqual(hyperg.hypergeom_pmf(N, A, draws, 1), expected_one_draw_prob, f"Should be {expected_one_draw_prob}")
+        self.assertEqual(
+            hyperg.hypergeom_pmf(N, A, draws, 1), expected_one_draw_prob, f"Should be {expected_one_draw_prob}")
 
     def test_binomial_distribution(self):
         n_s=[100,10,55]
@@ -104,7 +101,8 @@ class TestProbabilityDistributionFunction(unittest.TestCase):
             self.assertEqual(
                 binom.binomial_distribution(p_s[i])['binomial_mean'], n_s[i] * p_s[i], f"Should be {n_s[i] * p_s[i]}")
 
-            self.assertEqual(binom.binomial_distribution(p_s[i])['binomial_variance'], n_s[i] * p_s[i] * (1 - p_s[i]),
+            self.assertEqual(
+                binom.binomial_distribution(p_s[i])['binomial_variance'], n_s[i] * p_s[i] * (1 - p_s[i]),
                              f"Should be {n_s[i] * p_s[i] * (1 - p_s[i])}")
 
 
