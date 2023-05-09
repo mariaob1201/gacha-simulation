@@ -119,7 +119,7 @@ plots_32 = plots_earned[3]
 chart_data = pd.DataFrame(
     {'Rewards_Types': ['Amazing', 'Regular', 'Poor'],
     'Probabilities':[Amazing, Regular, 1-(Amazing+Regular)],
-     'Number of rewards after rolls': [len(new['Poor']), len(new['Regular']), len(new['Amazing'])]
+     'Number of rewards after rolls': [len(new['Amazing']), len(new['Regular']), len(new['Poor'])]
     })
 
 n = rolls * n_players
