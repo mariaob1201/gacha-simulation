@@ -102,10 +102,14 @@ class RollOut():
                 tot = self.N
             else:
                 tot = 1
-            initiall_roll = np.random.choice(die, size=tot, p=probabilities)
-            return list(initiall_roll)
+
+            if sum(probabilities)!=1:
+                raise TypeError("Input should sum 1:")
+            else:
+                initiall_roll = np.random.choice(die, size=tot, p=probabilities)
+                return list(initiall_roll)
         except Exception as e:
-            raise TypeError("Input should sum 1:")
+            raise TypeError("Error : ", e)
 
     def complete_dynamics(self, fr, all_rewards):
         """
