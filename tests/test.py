@@ -80,8 +80,9 @@ class TestRolls(unittest.TestCase):
             k+=1
     def test_complete_dynamics_ou2(self):
         rolls_out = RollOut(2)
-        expected = [0, 0, 0, 0]
         fr = fr_s[0]
+        expected = [0, 0, 0, 0]
+
         self.assertEqual(rolls_out.complete_dynamics(fr, all_rewards_set)[-1], expected, "Should be [0, 0, 0, 0]")
 
         self.assertEqual(len(rolls_out.complete_dynamics(fr, all_rewards_set)[-1]), 4, "Should have len 4")
