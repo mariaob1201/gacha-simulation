@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 from source.auxiliar_functions import ether_to_usd, HypergeometricDistributionFunction, human_format, RollOut, BinomialDistributionFunction
 
 
-categories = ['Amazing', 'Regular', 'Poor']
+categories = ['Plots', 'MysteryB', 'NMysteryB']
 probabs = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
 
 
