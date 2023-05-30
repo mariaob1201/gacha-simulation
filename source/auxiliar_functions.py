@@ -10,7 +10,7 @@ import logging
 
 
 
-rewards_dict = {'Plots': ['Plot 8*8', 'Plot 16*16', 'Plot 32*32', 'Plot 64x64'],
+rewards_dict = {'Plots': ['Plot 8*8', 'Plot 16*16', 'Plot 32*32', 'Plot 64*64'],
                'MysteryB': ['Familiar Bronze Mystery Box (5)',
                                         'Mount Bronze Mystery Box (5)',
                                         'Architecture Bronze Mystery Box (5)',
@@ -380,6 +380,9 @@ def dtype_func(item):
     else:
         return 'No Mystery Box'
 
+
+
+
 def normal_distribution(items_list, probabilities_list, N, title):
     dict_items = {}
     fin_dict = {}
@@ -405,5 +408,8 @@ def normal_distribution(items_list, probabilities_list, N, title):
         fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
+
     except Exception as e:
         logging.error('Error ', e)
+
+    return dict_items

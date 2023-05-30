@@ -3,7 +3,6 @@ import pandas as pd
 import logging
 import requests
 from auxiliar_functions import *
-from auxiliar_functions import rewards_dict
 import plotly.express as px
 from scipy.stats import binom
 import time
@@ -54,7 +53,7 @@ p32_p = st.sidebar.slider('32x32 Plot', min_value=0.00, max_value=1.00 - (Amazin
 ###################### REWARDS
 probabilities_for_amazing = [p8_p, p16_p, p32_p, 1 - (p32_p + p8_p + p16_p)]
 
-all_rewards = {'Plots': {'Types': ['Plot 8*8', 'Plot 16*16', 'Plot 32*32', 'Plot 64x64'],
+all_rewards = {'Plots': {'Types': ['Plot 8*8', 'Plot 16*16', 'Plot 32*32', 'Plot 64*64'],
                            'Probabilities': probabilities_for_amazing},
                'MysteryB': {'Types': ['Familiar Bronze Mystery Box (5)',
                                         'Mount Bronze Mystery Box (5)',
@@ -133,6 +132,7 @@ chart_data = pd.DataFrame(
 
 n = rolls * n_players
 
+plots_summary = {'Plot 8*8':0, 'Plot 16*16':0, 'Plot 32*32':0, 'Plot 64*64':0}
 if rolls > 0:
     st.subheader('''2.1 Example (one player) VERSION 1''')
     st.write(f''':green[One single player Paid {rolls} rolls], then the given rewards are distributed as follows:''')
@@ -149,11 +149,16 @@ if rolls > 0:
     rtype = 'HardPity'
     st.caption(f''':moneybag: :moneybag: :red[Community Tier 5  - {rtype} Odds] :moneybag: :moneybag:''')
     if chart_data1['Number of rolls of type'][0] > 0:
-        normal_distribution(
+        nd = normal_distribution(
             all_rewards['NMysteryB']['Types'] +
             all_rewards['MysteryB']['Types'] + all_rewards['Plots']['Types'],
             (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.9, 0.05, 0.03, 0.02),
             chart_data1['Number of rolls of type'][0], rtype[:4] + ' ' + rtype[4:])
+
+        for k, val in nd.items():
+            print('????????????????? ', k)
+            if 'Plot' in k:
+                plots_summary[k] += val
     else:
         st.write('No Rewards on Hard Pity')
 
@@ -161,27 +166,54 @@ if rolls > 0:
     rtype = 'SoftPity'
     st.caption(f''':moneybag: :moneybag: :red[Community Tier 5  - {rtype} Odds] :moneybag: :moneybag:''')
     if chart_data1['Number of rolls of type'][1] > 0:
-        normal_distribution(
+        nd=normal_distribution(
             all_rewards['NMysteryB']['Types'] +
             all_rewards['MysteryB']['Types'] + all_rewards['Plots']['Types'],
             (0.,0.,0.,0.,0.,0.,0.,0.06666666667,0.06666666667,0.06666666667,0.06666666667,0.06666666667,0.06666666667,
                0.06666666667,0.06666666667,0.06666666667,0.06666666667,0.06666666667,0.06666666667,0.1,0.08,0.015,0.005),
             chart_data1['Number of rolls of type'][1], rtype[:4] + ' ' + rtype[4:])
+
+        for k, val in nd.items():
+            if 'Plot' in k:
+                plots_summary[k] += val
     else:
         st.write('No Rewards on Soft Pity')
 
     rtype = 'Normal'
     st.caption(f''':moneybag: :moneybag: :red[Community Tier 5  - {rtype} Odds] :moneybag: :moneybag:''')
     if chart_data1['Number of rolls of type'][2] > 0:
-        normal_distribution(
+        nd = normal_distribution(
             all_rewards['NMysteryB']['Types'] +
             all_rewards['MysteryB']['Types'] + all_rewards['Plots']['Types'],
             (0.1314285714,0.1314285714,0.1314285714,0.1314285714,0.1314285714,0.1314285714,0.1314285714,0.005,0.005,
              0.005,0.005,0.005,0.005,0.005,0.005,0.005,0.005,0.005,0.005,0.016,0.004,0,0),
             chart_data1['Number of rolls of type'][2], rtype)
+
+        for k, val in nd.items():
+            if 'Plot' in k:
+                plots_summary[k] += val
+
     else:
         st.write('No Rewards on Normal')
 
+    def fun_prince(plot_str):
+        if '8*8' in plot_str:
+            return 480
+        elif '16*16' in plot_str:
+            return 1320
+        elif '32*32' in plot_str:
+            return 20000
+        elif '64*64' in plot_str:
+            return 32000
+
+
+    d_ = {'Plots': list(plots_summary.keys()),
+            'Amount': list(plots_summary.values()),
+                'Total USD': [plots_summary[l]*fun_prince(l) for l in plots_summary.keys()]}
+    pd_ = pd.DataFrame.from_dict(d_)
+    st.write(f":red[BALANCE ON PLOTS REWARDS] {human_format(usd_spent-sum(d_['Total USD']))}: Spent by player {human_format(usd_spent)}, "
+             f"Earned on Plots {human_format(sum(d_['Total USD']))} ")
+    st.dataframe(pd_)
 
 
     st.subheader('''2.1 Example (one player) VERSION 0''')
@@ -286,7 +318,6 @@ once one is giving as a reward, the collection decreases (no replacement) and th
     players_earnings_usd = plot_base_price * (
                 (plots_earn[1] * reserve_multiplier['8x8']) + (plots_earn[2] * reserve_multiplier['16x16']) + (
                     plots_earn[-1] * reserve_multiplier['32x32']))
-
 
 
     if plots_earned_by_rolls > 0:
