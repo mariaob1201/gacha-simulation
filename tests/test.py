@@ -7,7 +7,7 @@ categories = ['Amazing', 'Regular', 'Poor']
 probabs = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
 
 
-all_rewards_set = {'Amazing': {'Types': ['Mystery Box Tier 3', 'Plot 8*8', 'Plot 16*16', 'Plot 32*32'],
+all_rewards_set1 = {'Amazing': {'Types': ['Mystery Box Tier 3', 'Plot 8*8', 'Plot 16*16', 'Plot 32*32'],
                            'Probabilities': [0,1,0,0]},
                'Regular': {'Types': ['Mystery Box Tier 1', 'Recipe', 'Mystery Box Tier 2'],
                            'Probabilities': [1,0,0]},
@@ -15,6 +15,25 @@ all_rewards_set = {'Amazing': {'Types': ['Mystery Box Tier 3', 'Plot 8*8', 'Plot
                                   'Small Resource Pile', 'Medium Resource Pile', 'Bountiful Resource Pile'],
                         'Probabilities': [1,0,0,0,0,0]}}
 
+
+all_rewards_set = {'Plots': {'Types': ['Plot 8*8', 'Plot 16*16', 'Plot 32*32', 'Plot 64x64'],
+                           'Probabilities': [1,0,0,0,0]},
+               'MysteryB': {'Types': ['Familiar Bronze Mystery Box (5)',
+                                        'Mount Bronze Mystery Box (5)',
+                                        'Architecture Bronze Mystery Box (5)',
+                                        'Item Style Bronze Mystery Box (5)',
+                                        'Familiar Silver Mystery Box (3)',
+                                        'Mount Silver Mystery Box (3)',
+                                        'Architecture Silver Mystery Box (3)',
+                                        'Item Style Silver Mystery Box (3)',
+                                        'Familiar Gold Mystery Box (2)',
+                                        'Mount Gold Mystery Box (2)',
+                                        'Architecture Gold Mystery Box (2)',
+                                        'Item Style Gold Mystery Box (2)'],
+                           'Probabilities': [1,0,0,0,0,0,0,0,0,0,0]},
+               'NMysteryB': {'Types': ['Material Pack 1', 'Material Pack 2', 'Material Pack 3',
+                                  'Resource Pack 1', 'Resource Pack 2', 'Resource Pack 3','Recipe (3)'],
+                        'Probabilities': [1,0,0,0,0,0,0]}}
 
 class TestRolls(unittest.TestCase):
 
@@ -60,10 +79,10 @@ class TestRolls(unittest.TestCase):
             else:
                 if k < 2:
                     idx = 'Regular'
-                    rew = ['Mystery Box Tier 1']
+                    rew = ['Familiar Bronze Mystery Box (5)']
                 else:
                     idx = 'Poor'
-                    rew = ['Small Material Pack']
+                    rew = ['Material Pack 1']
 
             expected = all_rewards_set[idx]
             self.assertEqual(
