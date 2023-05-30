@@ -90,10 +90,11 @@ usd_spent = st.number_input('USD player Spent (AVG)', step=1., value=100., forma
 rolls_by_usd_price = st.number_input('One roll equals USD', step=1., value=2.5, format="%.2f", key=122)
 one_roll_mana_price = st.number_input('One roll equals Mana Units', step=1., value=10.0, format="%.2f", key=12221)
 
-hpity = st.number_input('Hard Pity Rolls (over 250)', step=.5, value=1.0, format="%.2f", key=12333221)
-hpity_p = hpity/250
-softp = st.number_input('Soft Pity Rolls (over 250)', step=5, value=25, format="%.2f", key=1221121)
-softp_p = softp/250
+
+hpity = st.number_input('Hard Pity Rolls (over 1000)', step=1.0, value=4.0, format="%.2f", key=12333221)
+hpity_p = hpity/1000
+softp = st.number_input('Soft Pity Rolls (over 1000)', step=5.0, value=100.0, format="%.2f", key=1221121)
+softp_p = softp/1000
 
 eth_rate = ether_to_usd('USD')
 conversionfunction = CurrenciesConversion(eth_rate, rolls_by_usd_price, one_roll_mana_price, [hpity_p, softp_p])
