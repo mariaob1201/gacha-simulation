@@ -9,6 +9,24 @@ import requests
 import logging
 
 
+
+rewards_dict = {'Plots': ['Plot 8*8', 'Plot 16*16', 'Plot 32*32', 'Plot 64x64'],
+               'MysteryB': ['Familiar Bronze Mystery Box (5)',
+                                        'Mount Bronze Mystery Box (5)',
+                                        'Architecture Bronze Mystery Box (5)',
+                                        'Item Style Bronze Mystery Box (5)',
+                                        'Familiar Silver Mystery Box (3)',
+                                        'Mount Silver Mystery Box (3)',
+                                        'Architecture Silver Mystery Box (3)',
+                                        'Item Style Silver Mystery Box (3)',
+                                        'Familiar Gold Mystery Box (2)',
+                                        'Mount Gold Mystery Box (2)',
+                                        'Architecture Gold Mystery Box (2)',
+                                        'Item Style Gold Mystery Box (2)'],
+               'NMysteryB': ['Material Pack 1', 'Material Pack 2', 'Material Pack 3',
+                        'Resource Pack 1', 'Resource Pack 2', 'Resource Pack 3','Recipe (3)']}
+
+
 def ether_to_usd(id):
     '''
 
@@ -30,10 +48,11 @@ def ether_to_usd(id):
 
 
 class CurrenciesConversion():
-    def __init__(self, eth_rate, rolls_by_usd_price, one_roll_mana_price):
+    def __init__(self, eth_rate, rolls_by_usd_price, one_roll_mana_price, pity_list):
         self.eth_rate=eth_rate
         self.rolls_by_usd_price = rolls_by_usd_price
         self.one_roll_mana_price = one_roll_mana_price
+        self.pity_list = pity_list
 
     def master_conversion_function(self, usd_spent):
         """
@@ -52,7 +71,7 @@ class CurrenciesConversion():
 
             conv = {'Currencies': [key for key, val in conversion.items()],
                     'Spent': [val for key, val in conversion.items()],
-                    'ROLLS Equivalence': [rolls, rolls, rolls]}
+                    'Total ROLLS': [rolls, rolls, rolls]}
             df = pd.DataFrame(conv)
             st.dataframe(df)
             return conversion, rolls
@@ -120,6 +139,7 @@ class RollOut():
         :return: occurrences on each reward type and specific rewards
         """
         try:
+            print('Here probs  ---> ', fr)
             plots = 0
             plots_8 = 0
             plots_16 = 0
@@ -127,9 +147,9 @@ class RollOut():
             first_rou = self.first_roll_out_dynamics(fr['categories'], fr['probabilities'], True)
 
             new = {}
-            new['Poor'] = []
-            new['Regular'] = []
-            new['Amazing'] = []
+            new['NMysteryB'] = []
+            new['MysteryB'] = []
+            new['Plots'] = []
 
             for i in first_rou:
                 secnd = self.first_roll_out_dynamics(all_rewards[i]['Types'], all_rewards[i]['Probabilities'], False)
@@ -345,3 +365,45 @@ def function(new, rtype, plots_earned, plot_base_price, plots_8, plots_16, plots
 
     except Exception as e:
         logging.error(f'''ERROR in function <<<<< {e} >>>>>>''')
+
+
+
+import random
+
+from numpy.random import choice
+
+def dtype_func(item):
+    if 'Plot' in item:
+        return 'Plot'
+    elif 'Mystery Box' in item:
+        return 'Mystery Box'
+    else:
+        return 'No Mystery Box'
+
+def normal_distribution(items_list, probabilities_list, N, title):
+    dict_items = {}
+    fin_dict = {}
+    try:
+        randomNumberList = choice(
+            items_list, N, p=probabilities_list)
+        print('Result ', randomNumberList)
+
+        for l in randomNumberList:
+            if l not in dict_items.keys():
+                dict_items[l]=1
+            else:
+                dict_items[l]+=1
+
+        fin_dict = {'Reward':list(dict_items.keys()),
+                'Amount':list(dict_items.values()),
+                    'Type':[dtype_func(k) for k in list(dict_items.keys())]}
+
+        fig = px.bar(
+            fin_dict, x=f"Reward", y="Amount",color='Type',text="Amount",
+            title=f"Rewards on {title}")
+        fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+
+    except Exception as e:
+        logging.error('Error ', e)
