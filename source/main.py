@@ -206,8 +206,8 @@ if rolls > 0:
     ########################################################################################################################
 
     dynamics = RollOut(rolls)
-    Amazing = .9
-    Regular = .06
+    Amazing = hpity_p
+    Regular = softp_p
     fr = {
         'categories': ['Plots', 'MysteryB', 'NMysteryB'],
         'probabilities': [Amazing, Regular, 1 - (Amazing+Regular)]
@@ -268,11 +268,13 @@ if rolls > 0:
 
 
 st.subheader(f" 2.2 Probability Distribution Function")
-st.write(f'''The chance for each reward class is (by controls):  
+
+
+st.write(f'''The chance for each reward class is:  
 
         - Plots: {str(Amazing * 100) + '%'} probability
-    - Regular: {str(Regular * 100) + '%'} probability
-    - NoMysteryB: {str((1 - (Amazing + Regular)) * 100) + '%'} probability (as complement)''')
+    - Mystery Boxes: {str(Regular * 100) + '%'} probability
+    - No Mystery Boxes: {str((1 - (Amazing + Regular)) * 100) + '%'} probability (as complement)''')
 
 
 if n > 0:
