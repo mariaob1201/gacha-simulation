@@ -139,7 +139,6 @@ class RollOut():
         :return: occurrences on each reward type and specific rewards
         """
         try:
-            print('Here probs  ---> ', fr)
             plots = 0
             plots_8 = 0
             plots_16 = 0
@@ -389,7 +388,6 @@ def normal_distribution(items_list, probabilities_list, N, title):
     try:
         randomNumberList = choice(
             items_list, N, p=probabilities_list)
-        print('Result ', randomNumberList)
 
         for l in randomNumberList:
             if l not in dict_items.keys():

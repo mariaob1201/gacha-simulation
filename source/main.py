@@ -25,32 +25,37 @@ N = (p_32 + p_16 + p_8)
 st.sidebar.markdown("## 1. Controls")
 n_players = st.sidebar.slider('Number of players', min_value=1, max_value=100000, value=80, step=1, key=121117711123)
 
-st.sidebar.markdown("## 2. Reward Types")
+st.sidebar.markdown("## 2.1 Normal Rewards Odds")
 
-NomB = st.sidebar.slider('No Mystery Boxes Chances (Over 100 rolls)', min_value=0.00, max_value=100.00,
-                              value=0.90, step=.01, key=11)
-NomB_p = NomB / 100
-
-
-Regular_p = st.sidebar.slider('Mystery Boxes Chances (Over 100 rolls)', min_value=0.00, max_value=100.00,
-                              value=2.0, step=.01, key=1212)
-
-Regular = Regular_p / 100
-
-
-Amazing_p = st.sidebar.slider('Plots Chances (Over 100 rolls)',
-                              min_value=0.00, max_value=10.00, value=0.4, step=.02, key=1)
-Amazing = Amazing_p / 100
-
-p8_p = st.sidebar.slider('8x8 Plot', min_value=0.00, max_value=1.00 - Amazing+Regular, value=0.2, step=.01, key=13229)
-p16_p = st.sidebar.slider('16x16 Plot', min_value=0.00, max_value=1.00 - (Amazing+Regular + p8_p), value=0.09, step=.01,
-                          key=139292)
-p32_p = st.sidebar.slider('32x32 Plot', min_value=0.00, max_value=1.00 - (Amazing+Regular + p8_p+p16_p),
-                          value=0.7, step=.01, key=13292)
+NoMB_nor = st.sidebar.slider('No Mystery Boxes Chances on Normal', min_value=0.00, max_value=1.00,
+                              value=0.9, step=.01, key=11)
+MB_nor = st.sidebar.slider('Mystery Boxes Chances on Normal',min_value=0.00, max_value=1.0-(NoMB_nor),
+                           value=.06, step=.01, key=1212)
+p8_nor = st.sidebar.slider('Plot 8*8 on Normal',min_value=0.00, max_value=1.0-(MB_nor+NoMB_nor),
+                           value=.03, step=.01, key=12144)
+p16_nor = st.sidebar.slider('Plot 16*16 on Normal',min_value=0.00, max_value=1.0-(MB_nor+NoMB_nor+p8_nor),
+                            value=.006, step=.001, key=2)
+p32_nor = st.sidebar.slider('Plot 32*32 Chances on Normal',min_value=0.00,
+                            max_value=1.0-(MB_nor+NoMB_nor+p8_nor+p16_nor), value=.0, step=.01, key=100000000)
 
 
+st.sidebar.markdown("## 2.2 Soft Pity Odds")
+MB_sp = st.sidebar.slider('Mystery Boxes Chances on Soft Pity',min_value=0.00, max_value=1.0,
+                           value=.9, step=.01, key=1213)
+p8_sp = st.sidebar.slider('Plot 8*8 on Soft Pity',min_value=0.00, max_value=min(0.0,1.0-(MB_sp)),
+                           value=.06, step=.01, key=1214)
+p16_sp = st.sidebar.slider('Plot 16*16 on Soft Pity',min_value=0.00, max_value=min(0.0,1.0-(MB_sp+p8_sp)),
+                            value=.004, step=.001, key=3)
+p32_sp = st.sidebar.slider('Plot 32*32 Chances on Soft Pity',min_value=0.00,
+                            max_value=min(0.0,1.0-(MB_sp+p8_sp+p16_sp)), value=0.001, step=.01, key=1)
 
+st.sidebar.markdown("## 2.3 Hard Pity Odds")
+
+p8_p = st.sidebar.slider('8x8 Plot', min_value=0.00, max_value=1.0, value=0.9, step=.01, key=1322911)
+p16_p = st.sidebar.slider('16x16 Plot', min_value=0.00, max_value=min(0.0,1.00 - p8_p), value=0.05, step=.01, key=1392921)
+p32_p = st.sidebar.slider('32x32 Plot', min_value=0.00, max_value=min(0.0,1.00-(p8_p+p16_p)), value=0.03, step=.01, key=1392192)
 ###################### REWARDS
+
 probabilities_for_amazing = [p8_p, p16_p, p32_p, 1 - (p32_p + p8_p + p16_p)]
 
 all_rewards = {'Plots': {'Types': ['Plot 8*8', 'Plot 16*16', 'Plot 32*32', 'Plot 64*64'],
@@ -71,9 +76,6 @@ all_rewards = {'Plots': {'Types': ['Plot 8*8', 'Plot 16*16', 'Plot 32*32', 'Plot
                'NMysteryB': {'Types': ['Material Pack 1', 'Material Pack 2', 'Material Pack 3',
                                   'Resource Pack 1', 'Resource Pack 2', 'Resource Pack 3','Recipe (3)'],
                         'Probabilities': [1/7,1/7,1/7,1/7,1/7,1/7,1-(1/7+1/7+1/7+1/7+1/7+1/7)]}}
-
-for key, val in all_rewards.items():
-    print('--------------------------------> ', key, sum(val['Probabilities']))
 
 ##################################################################################################################
 #################################MASTER CONVERSION FUNCTION ######################################################
@@ -110,31 +112,16 @@ conv_fun, rolls = conversionfunction.master_conversion_function(usd_spent)
 
 st.title("2. Reward Types")
 
-fr = {
-    'categories': ['Plots', 'MysteryB', 'NMysteryB'],
-    'probabilities': [Amazing, Regular, 1 - (Regular + Amazing)]
-}
 
-print('----> ',fr)
-
-
-dynamics = RollOut(rolls)
-new, plots_earned = dynamics.complete_dynamics(fr, all_rewards)
-plots_8 = plots_earned[1]
-plots_16 = plots_earned[2]
-plots_32 = plots_earned[3]
-
-chart_data = pd.DataFrame(
-    {'Rewards_Types': ['Plots', 'MysteryB', 'NMysteryB'],
-    'Probabilities':[Amazing, Regular, 1-(Amazing+Regular)],
-    'Number of rewards after rolls': [len(new['Plots']), len(new['MysteryB']), len(new['NMysteryB'])]
-    })
 
 n = rolls * n_players
 
 plots_summary = {'Plot 8*8':0, 'Plot 16*16':0, 'Plot 32*32':0, 'Plot 64*64':0}
 if rolls > 0:
     st.subheader('''2.1 Example (one player) VERSION 1''')
+    st.write(
+        f'''Reward Chances Link [here](https://docs.google.com/spreadsheets/d/1mDwwNCCeqi0cMjmO2SBg9iaw0gQaITJQoKw0Q2ozO1c/edit#gid=0).''')
+
     st.write(f''':green[One single player Paid {rolls} rolls], then the given rewards are distributed as follows:''')
     chart_data1 = pd.DataFrame(
         {'Pity Types': ['HardPity','SoftPity',  'Normal'],
@@ -144,7 +131,7 @@ if rolls > 0:
          })
 
     st.dataframe(chart_data1)
-    st.write(f'''Reward Chances Link [here](https://docs.google.com/spreadsheets/d/1mDwwNCCeqi0cMjmO2SBg9iaw0gQaITJQoKw0Q2ozO1c/edit#gid=0).''')
+
 
     rtype = 'HardPity'
     st.caption(f''':moneybag: :moneybag: :red[Community Tier 5  - {rtype} Odds] :moneybag: :moneybag:''')
@@ -152,11 +139,10 @@ if rolls > 0:
         nd = normal_distribution(
             all_rewards['NMysteryB']['Types'] +
             all_rewards['MysteryB']['Types'] + all_rewards['Plots']['Types'],
-            (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.9, 0.05, 0.03, 0.02),
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]+probabilities_for_amazing,
             chart_data1['Number of rolls of type'][0], rtype[:4] + ' ' + rtype[4:])
 
         for k, val in nd.items():
-            print('????????????????? ', k)
             if 'Plot' in k:
                 plots_summary[k] += val
     else:
@@ -166,11 +152,11 @@ if rolls > 0:
     rtype = 'SoftPity'
     st.caption(f''':moneybag: :moneybag: :red[Community Tier 5  - {rtype} Odds] :moneybag: :moneybag:''')
     if chart_data1['Number of rolls of type'][1] > 0:
+
         nd=normal_distribution(
             all_rewards['NMysteryB']['Types'] +
             all_rewards['MysteryB']['Types'] + all_rewards['Plots']['Types'],
-            (0.,0.,0.,0.,0.,0.,0.,0.06666666667,0.06666666667,0.06666666667,0.06666666667,0.06666666667,0.06666666667,
-               0.06666666667,0.06666666667,0.06666666667,0.06666666667,0.06666666667,0.06666666667,0.1,0.08,0.015,0.005),
+            7*[0] + 12*[round(MB_sp/12, 3)]+[p8_sp,p16_sp,p32_sp, 1-(p8_sp+p16_sp+p32_sp+MB_sp)],
             chart_data1['Number of rolls of type'][1], rtype[:4] + ' ' + rtype[4:])
 
         for k, val in nd.items():
@@ -185,8 +171,8 @@ if rolls > 0:
         nd = normal_distribution(
             all_rewards['NMysteryB']['Types'] +
             all_rewards['MysteryB']['Types'] + all_rewards['Plots']['Types'],
-            (0.1314285714,0.1314285714,0.1314285714,0.1314285714,0.1314285714,0.1314285714,0.1314285714,0.005,0.005,
-             0.005,0.005,0.005,0.005,0.005,0.005,0.005,0.005,0.005,0.005,0.016,0.004,0,0),
+            (7 * [NoMB_nor / 7]) + (12 * [MB_nor / 12]) + [p8_nor, p16_nor, p32_nor,
+                                                       1 - (p8_nor + p16_nor + p32_nor + MB_nor + NoMB_nor)],
             chart_data1['Number of rolls of type'][2], rtype)
 
         for k, val in nd.items():
@@ -215,6 +201,27 @@ if rolls > 0:
              f"Earned on Plots {human_format(sum(d_['Total USD']))} ")
     st.dataframe(pd_)
 
+    ########################################################################################################################
+    ################################2.2 Probability Distribution Function ##################################################
+    ########################################################################################################################
+
+    dynamics = RollOut(rolls)
+    Amazing = .9
+    Regular = .06
+    fr = {
+        'categories': ['Plots', 'MysteryB', 'NMysteryB'],
+        'probabilities': [Amazing, Regular, 1 - (Amazing+Regular)]
+    }
+    new, plots_earned = dynamics.complete_dynamics(fr, all_rewards)
+
+    st.header("## 3. Other Mathematical Models of Gacha Dynamics")
+
+
+
+
+    plots_8 = plots_earned[1]
+    plots_16 = plots_earned[2]
+    plots_32 = plots_earned[3]
 
     st.subheader('''2.1 Example (one player) VERSION 0''')
 
@@ -258,9 +265,7 @@ if rolls > 0:
         st.write('''In this example were no NoMysteryB rewards.''')
 
 
-########################################################################################################################
-################################2.2 Probability Distribution Function ##################################################
-########################################################################################################################
+
 
 st.subheader(f" 2.2 Probability Distribution Function")
 st.write(f'''The chance for each reward class is (by controls):  
@@ -309,7 +314,6 @@ once one is giving as a reward, the collection decreases (no replacement) and th
     tolls_per_tspent, totalrolls = conversionfunction.master_conversion_function(n_players * usd_spent)
 
     dynamics = RollOut(totalrolls)
-    print('Here ---> ', fr)
     dyn, plots_earn = dynamics.complete_dynamics(fr, all_rewards)
 
     plots_earned_by_rolls = plots_earn[0]
