@@ -152,16 +152,18 @@ if rolls > 0:
     rtype = 'SoftPity'
     st.caption(f''':moneybag: :moneybag: :red[Community Tier 5  - {rtype} Odds] :moneybag: :moneybag:''')
     if chart_data1['Number of rolls of type'][1] > 0:
+        try:
+            nd=normal_distribution(
+                all_rewards['NMysteryB']['Types'] +
+                all_rewards['MysteryB']['Types'] + all_rewards['Plots']['Types'],
+                7*[0] + 12*[MB_sp/12]+[p8_sp,p16_sp,p32_sp, 1-(p8_sp+p16_sp+p32_sp+MB_sp)],
+                chart_data1['Number of rolls of type'][1], rtype[:4] + ' ' + rtype[4:])
 
-        nd=normal_distribution(
-            all_rewards['NMysteryB']['Types'] +
-            all_rewards['MysteryB']['Types'] + all_rewards['Plots']['Types'],
-            7*[0] + 12*[round(MB_sp/12, 3)]+[p8_sp,p16_sp,p32_sp, 1-(p8_sp+p16_sp+p32_sp+MB_sp)],
-            chart_data1['Number of rolls of type'][1], rtype[:4] + ' ' + rtype[4:])
-
-        for k, val in nd.items():
-            if 'Plot' in k:
-                plots_summary[k] += val
+            for k, val in nd.items():
+                if 'Plot' in k:
+                    plots_summary[k] += val
+        except Exception as e:
+            logging.error('In soft pity ', e)
     else:
         st.write('No Rewards on Soft Pity')
 
