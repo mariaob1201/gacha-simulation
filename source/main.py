@@ -25,19 +25,12 @@ N = (p_32 + p_16 + p_8)
 st.sidebar.markdown("## 1. Controls")
 n_players = st.sidebar.slider('Number of players', min_value=1, max_value=100000, value=80, step=1, key=121117711123)
 
-st.sidebar.markdown("## 2.1 Normal Rewards Odds")
 
-NoMB_nor = st.sidebar.slider('No Mystery Boxes Chances on Normal', min_value=0.00, max_value=1.00,
-                              value=0.9, step=.01, key=11)
-MB_nor = st.sidebar.slider('Mystery Boxes Chances on Normal',min_value=0.00, max_value=1.0-(NoMB_nor),
-                           value=.06, step=.01, key=1212)
-p8_nor = st.sidebar.slider('Plot 8*8 on Normal',min_value=0.00, max_value=1.0-(MB_nor+NoMB_nor),
-                           value=.03, step=.01, key=12144)
-p16_nor = st.sidebar.slider('Plot 16*16 on Normal',min_value=0.00, max_value=1.0-(MB_nor+NoMB_nor+p8_nor),
-                            value=.006, step=.001, key=2)
-p32_nor = st.sidebar.slider('Plot 32*32 Chances on Normal',min_value=0.00,
-                            max_value=1.0-(MB_nor+NoMB_nor+p8_nor+p16_nor), value=.0, step=.01, key=100000000)
+st.sidebar.markdown("## 2.1 Hard Pity Odds")
 
+p8_p = st.sidebar.slider('8x8 Plot', min_value=0.00, max_value=1.0, value=0.9, step=.01, key=1322911)
+p16_p = st.sidebar.slider('16x16 Plot', min_value=0.00, max_value=min(0.0,1.00 - p8_p), value=0.05, step=.01, key=1392921)
+p32_p = st.sidebar.slider('32x32 Plot', min_value=0.00, max_value=min(0.0,1.00-(p8_p+p16_p)), value=0.03, step=.01, key=1392192)
 
 st.sidebar.markdown("## 2.2 Soft Pity Odds")
 MB_sp = st.sidebar.slider('Mystery Boxes Chances on Soft Pity',min_value=0.00, max_value=1.0,
@@ -49,11 +42,18 @@ p16_sp = st.sidebar.slider('Plot 16*16 on Soft Pity',min_value=0.00, max_value=m
 p32_sp = st.sidebar.slider('Plot 32*32 Chances on Soft Pity',min_value=0.00,
                             max_value=min(0.0,1.0-(MB_sp+p8_sp+p16_sp)), value=0.001, step=.01, key=1)
 
-st.sidebar.markdown("## 2.3 Hard Pity Odds")
+st.sidebar.markdown("## 2.3 Normal Rewards Odds")
 
-p8_p = st.sidebar.slider('8x8 Plot', min_value=0.00, max_value=1.0, value=0.9, step=.01, key=1322911)
-p16_p = st.sidebar.slider('16x16 Plot', min_value=0.00, max_value=min(0.0,1.00 - p8_p), value=0.05, step=.01, key=1392921)
-p32_p = st.sidebar.slider('32x32 Plot', min_value=0.00, max_value=min(0.0,1.00-(p8_p+p16_p)), value=0.03, step=.01, key=1392192)
+NoMB_nor = st.sidebar.slider('No Mystery Boxes Chances on Normal', min_value=0.00, max_value=1.00,
+                              value=0.9, step=.01, key=11)
+MB_nor = st.sidebar.slider('Mystery Boxes Chances on Normal',min_value=0.00, max_value=1.0-(NoMB_nor),
+                           value=.06, step=.01, key=1212)
+p8_nor = st.sidebar.slider('Plot 8*8 on Normal',min_value=0.00, max_value=1.0-(MB_nor+NoMB_nor),
+                           value=.03, step=.01, key=12144)
+p16_nor = st.sidebar.slider('Plot 16*16 on Normal',min_value=0.00, max_value=1.0-(MB_nor+NoMB_nor+p8_nor),
+                            value=.006, step=.001, key=2)
+p32_nor = st.sidebar.slider('Plot 32*32 Chances on Normal',min_value=0.00,
+                            max_value=1.0-(MB_nor+NoMB_nor+p8_nor+p16_nor), value=.0, step=.01, key=100000000)
 ###################### REWARDS
 
 probabilities_for_amazing = [p8_p, p16_p, p32_p, 1 - (p32_p + p8_p + p16_p)]
