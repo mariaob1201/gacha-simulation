@@ -134,12 +134,11 @@ if rolls > 0:
 
 
     rtype = 'HardPity'
-    st.caption(f''':moneybag: :moneybag: :red[Community Tier 5  - {rtype} Odds] :moneybag: :moneybag:''')
+    st.caption(f''':moneybag: :moneybag: :red[Community Tier 5  - {rtype[:4] + ' ' + rtype[4:]} Odds] :moneybag: :moneybag:''')
     if chart_data1['Number of rolls of type'][0] > 0:
         nd = normal_distribution(
-            all_rewards['NMysteryB']['Types'] +
-            all_rewards['MysteryB']['Types'] + all_rewards['Plots']['Types'],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]+probabilities_for_amazing,
+            all_rewards['NMysteryB']['Types'] + all_rewards['MysteryB']['Types'] + all_rewards['Plots']['Types'],
+            19*[0]+probabilities_for_amazing,
             chart_data1['Number of rolls of type'][0], rtype[:4] + ' ' + rtype[4:])
 
         for k, val in nd.items():
@@ -150,12 +149,11 @@ if rolls > 0:
 
 
     rtype = 'SoftPity'
-    st.caption(f''':moneybag: :moneybag: :red[Community Tier 5  - {rtype} Odds] :moneybag: :moneybag:''')
+    st.caption(f''':moneybag: :moneybag: :red[Community Tier 5  - {rtype[:4] + ' ' + rtype[4:]} Odds] :moneybag: :moneybag:''')
     if chart_data1['Number of rolls of type'][1] > 0:
         try:
             nd=normal_distribution(
-                all_rewards['NMysteryB']['Types'] +
-                all_rewards['MysteryB']['Types'] + all_rewards['Plots']['Types'],
+                all_rewards['NMysteryB']['Types'] + all_rewards['MysteryB']['Types'] + all_rewards['Plots']['Types'],
                 7*[0] + 12*[MB_sp/12]+[p8_sp,p16_sp,p32_sp, 1-(p8_sp+p16_sp+p32_sp+MB_sp)],
                 chart_data1['Number of rolls of type'][1], rtype[:4] + ' ' + rtype[4:])
 
@@ -171,8 +169,7 @@ if rolls > 0:
     st.caption(f''':moneybag: :moneybag: :red[Community Tier 5  - {rtype} Odds] :moneybag: :moneybag:''')
     if chart_data1['Number of rolls of type'][2] > 0:
         nd = normal_distribution(
-            all_rewards['NMysteryB']['Types'] +
-            all_rewards['MysteryB']['Types'] + all_rewards['Plots']['Types'],
+            all_rewards['NMysteryB']['Types'] + all_rewards['MysteryB']['Types'] + all_rewards['Plots']['Types'],
             (7 * [NoMB_nor / 7]) + (12 * [MB_nor / 12]) + [p8_nor, p16_nor, p32_nor,
                                                        1 - (p8_nor + p16_nor + p32_nor + MB_nor + NoMB_nor)],
             chart_data1['Number of rolls of type'][2], rtype)
@@ -180,7 +177,6 @@ if rolls > 0:
         for k, val in nd.items():
             if 'Plot' in k:
                 plots_summary[k] += val
-
     else:
         st.write('No Rewards on Normal')
 
