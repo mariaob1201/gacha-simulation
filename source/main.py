@@ -195,8 +195,16 @@ if rolls > 0:
             'Amount': list(plots_summary.values()),
                 'Total USD': [plots_summary[l]*fun_prince(l) for l in plots_summary.keys()]}
     pd_ = pd.DataFrame.from_dict(d_)
-    st.write(f":red[BALANCE ON PLOTS REWARDS] {human_format(usd_spent-sum(d_['Total USD']))}: Spent by player {human_format(usd_spent)}, "
-             f"Earned on Plots {human_format(sum(d_['Total USD']))} ")
+
+    st.write(
+        f":green[BALANCE ON PLOTS REWARDS:] {':arrow_up:' if usd_spent > sum(d_['Total USD']) else ':arrow_down:'} {human_format(usd_spent - sum(d_['Total USD']))} USD.")
+    st.write(
+        f''':house: :green[Runiverse incomes] (one player): {human_format(usd_spent)} USD''')
+
+    st.write(
+        f''':video_game: :green[Player Earnings] ({rolls} rolls): {human_format(sum(d_['Total USD']))} USD ({sum(list(plots_summary.values()))} plots) as a reward.''')
+
+
     st.dataframe(pd_)
 
     ########################################################################################################################
