@@ -5,14 +5,13 @@ import requests
 from auxiliar_functions import *
 import plotly.express as px
 from scipy.stats import binom
-
-url = "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"
+import time
 
 reserve_multiplier = {'8x8': 1,
                       '16x16': 2.75,
-                      '32x32': 41.67,
-                      '64x64': 66.67,
-                      '128x128': 666.67}
+                      '32x32': 42,
+                      '64x64': 67,
+                      '128x128': 667}
 plot_base_price = 480
 
 p_32 = 88
@@ -20,370 +19,377 @@ p_16 = 1800
 p_8 = 6000
 N = (p_32 + p_16 + p_8)
 
-# st.sidebar.markdown("## 1. Master Conversion Formula")
-# usd_spent = st.sidebar.slider('Player Spent (USD)', min_value=0.00, max_value=1000.00, value=100.00, step=.01, key=111)
+
+
 ###################### REWARDS
-st.sidebar.markdown("## 1. General")
-n_players = st.sidebar.slider('Number of players', min_value=1, max_value=100000, value=80, step=1, key=121117711123)
 
-st.sidebar.markdown("## 2. Reward Types")
-Amazing_p = st.sidebar.slider('Amazing reward chance on 100 opportunities',
-                              min_value=0.00, max_value=10.00, value=0.50, step=.01, key=1)
-Amazing = Amazing_p / 100
 
-Regular_p = st.sidebar.slider('Regular reward chance on 100 opportunities', min_value=0.00, max_value=100.00,
-                              value=2.0, step=.01, key=11)
-Regular = Regular_p / 100
+st.sidebar.markdown("## 2.1 Hard Pity Odds")
+
+p8_p = st.sidebar.slider('8x8 Plot', min_value=0.00, max_value=1.0, value=0.9, step=.01, key=1322911)
+p16_p = st.sidebar.slider('16x16 Plot', min_value=0.00, max_value=1.00 - p8_p+0.001, value=0.05, step=.01, key=1392921)
+p32_p = st.sidebar.slider('32x32 Plot', min_value=0.00, max_value=1.00-(p8_p+p16_p)+0.001, value=0.03, step=.01, key=1392192)
+
+
+
+#st.sidebar.markdown("## 2.3 Normal Rewards Odds")
+
+
 ###################### REWARDS
-st.sidebar.markdown("## 2.1 Rewards Chances - Amazing")
-MBT3_p = st.sidebar.slider('Mystery Box Tier 3', min_value=0.00, max_value=1.00, value=0.7, step=.01, key=13292)
-p8_p = st.sidebar.slider('8x8 Plot', min_value=0.00, max_value=1.00 - MBT3_p, value=0.2, step=.01, key=13229)
-p16_p = st.sidebar.slider('16x16 Plot', min_value=0.00, max_value=1.00 - (MBT3_p + p8_p), value=0.09, step=.01,
-                          key=139292)
 
-st.sidebar.markdown("## 2.2 Rewards Chances - Regular")
-MBT1 = st.sidebar.slider('Mystery Box Tier 1', min_value=0.00, max_value=1.00, value=1 / 3, step=.01, key=1232)
-Recipe = st.sidebar.slider('Recipe', min_value=0.00, max_value=1.00 - MBT1, value=1 / 3, step=.01, key=1223)
+probabilities_for_amazing = [p8_p, p16_p, p32_p, 1 - (p32_p + p8_p + p16_p)]
 
-st.sidebar.markdown("## 2.2 Rewards Chances - Poor")
-smp_p = st.sidebar.slider('Small Material Pack', min_value=0.00, max_value=1.00, value=1 / 6, step=.01, key=12321)
-srp_p = st.sidebar.slider('Small Resource Pile', min_value=0.00, max_value=1.00 - smp_p, value=1 / 6, step=.01,
-                          key=12123)
-mmp_p = st.sidebar.slider('Medium Material Pack', min_value=0.00, max_value=1.00 - (smp_p + srp_p), value=1 / 6,
-                          step=.01, key=121234)
-mrp_p = st.sidebar.slider('Medium Resource Pile', min_value=0.00, max_value=1.00 - (smp_p + srp_p + mmp_p),
-                          value=1 / 6, step=.01, key=121123)
-bmp_p = st.sidebar.slider('Bountiful Material Pack', min_value=0.00, max_value=1.00 - (smp_p + srp_p + mmp_p + mrp_p),
-                          value=1 / 6, step=.01, key=1211233)
-
-p = (1 - MBT3_p) / N
-probabilities_for_amazing = [MBT3_p, p * p_8, p * p_16, p * p_32]
-
-all_rewards = {'Amazing': {'Types': ['Mystery Box Tier 3', 'Plot 8*8', 'Plot 16*16', 'Plot 32*32'],
-                           'Probabilities': [MBT3_p, p8_p, p16_p, 1 - (MBT3_p + p8_p + p16_p)]},
-               'Regular': {'Types': ['Mystery Box Tier 1', 'Recipe', 'Mystery Box Tier 2'],
-                           'Probabilities': [MBT1, Recipe, 1 - (MBT1 + Recipe)]},
-               'Poor': {'Types': ['Small Material Pack', 'Medium Material Pack', 'Bountiful Material Pack',
-                                  'Small Resource Pile', 'Medium Resource Pile', 'Bountiful Resource Pile'],
-                        'Probabilities': [smp_p, mmp_p, bmp_p, srp_p, mrp_p,
-                                          1.00 - (smp_p + srp_p + mmp_p + bmp_p + mrp_p)]}}
-
+all_rewards = {'Plots': {'Types': ['Plot 8*8', 'Plot 16*16', 'Plot 32*32', 'Plot 64*64'],
+                           'Probabilities': probabilities_for_amazing},
+               'MysteryBoxes': {'Types': ['Familiar Bronze Mystery Box (5)',
+                                        'Mount Bronze Mystery Box (5)',
+                                        'Architecture Bronze Mystery Box (5)',
+                                        'Item Style Bronze Mystery Box (5)',
+                                        'Familiar Silver Mystery Box (3)',
+                                        'Mount Silver Mystery Box (3)',
+                                        'Architecture Silver Mystery Box (3)',
+                                        'Item Style Silver Mystery Box (3)',
+                                        'Familiar Gold Mystery Box (2)',
+                                        'Mount Gold Mystery Box (2)',
+                                        'Architecture Gold Mystery Box (2)',
+                                        'Item Style Gold Mystery Box (2)'],
+                           'Probabilities': [1/12]*12},
+               'NoMysteryBoxes': {'Types': ['Material Pack 1', 'Material Pack 2', 'Material Pack 3',
+                                  'Resource Pack 1', 'Resource Pack 2', 'Resource Pack 3','Recipe (3)'],
+                        'Probabilities': [1/7,1/7,1/7,1/7,1/7,1/7,1-(1/7+1/7+1/7+1/7+1/7+1/7)]}}
 
 ##################################################################################################################
 #################################MASTER CONVERSION FUNCTION ######################################################
 ##################################################################################################################
-def ether_to_usd(url):
-    try:
-        response = requests.get(
-            url,
-            headers={"Accept": "application/json"},
-        )
-        data = response.json()
-        USD = data['USD']
 
-    except Exception as e:
-        logging.error(f'''In ether to usd function {e}''')
-        USD = None
+st.title(":red[Monetization System based on Gacha Process]")
 
-    return USD
+st.title(":blue[1. Master Conversion Function]")
 
-
-eth_rate = ether_to_usd(url)
-
-
-def master_conversion_function(usd_spent, rolls_by_usd_price, one_roll_mana_price, eth_rate):
-    conversion = {'USD': usd_spent,
-                  'ETH': (usd_spent / eth_rate),
-                  'ROLLS': int(usd_spent / rolls_by_usd_price),
-                  'Mana': one_roll_mana_price * int(usd_spent / rolls_by_usd_price)}
-
-    return conversion
-
-
-st.title(":blue[Gacha Rolls Dynamics]")
-
-st.title("1. Master Conversion Function")
+n_players = st.number_input('Number of players', step=1.0, value=100.0, format="%.0f", key=121117711123)
 
 st.write(f'''The equivalence between Mana and hard currencies can be changed by control usage.''')
 
-usd_spent = st.number_input('USD player Spent (AVG)', step=1., value=100., format="%.2f", key=12112)
-rolls_by_usd_price = st.number_input('One roll equals USD', step=1., value=2.5, format="%.2f", key=122)
-# sysBP = st.number_input(label=“systolic blood pressure”,step=1.,format="%.2f")
-one_roll_mana_price = st.number_input('One roll equals Mana Units', step=1., value=10.0, format="%.2f", key=12221)
+usd_spent = st.number_input('USD player Spent', step=1., value=50., format="%.2f", key=12112)
+rolls_by_usd_price = st.number_input('One roll price (USD)', step=1., value=2.5, format="%.2f", key=122)
+one_roll_mana_price = st.number_input('One roll price (Mana Units)', step=1., value=10.0, format="%.2f", key=12221)
+
+
+hpity = st.number_input('Hard Pity Rolls (ON 1000R)', step=1.0, value=4.0, format="%.2f", key=12333221)
+hpity_p = hpity/1000
+softp = st.number_input('Soft Pity Rolls (ON 1000R)', step=5.0, value=100.0, format="%.2f", key=1221121)
+softp_p = softp/1000
+
+eth_rate = ether_to_usd('USD')
+conversionfunction = CurrenciesConversion(eth_rate, rolls_by_usd_price, one_roll_mana_price, [hpity_p, softp_p])
+
+
 
 st.write(f''':green[Equivalence between currencies:]
 
     - REAL: The Ethereum corresponds to {eth_rate} USD at this moment.
-    - IN GAME: Roll price is {rolls_by_usd_price} USD, or {one_roll_mana_price} Mana units (can change by control). ''')
+    - IN GAME: One Roll price is {rolls_by_usd_price} USD or {one_roll_mana_price} Mana units (can change by control).''')
 
-conv_fun = master_conversion_function(usd_spent, rolls_by_usd_price, one_roll_mana_price, eth_rate)
-df = pd.DataFrame(conv_fun, index=[0])
-st.dataframe(df)
+conv_fun, rolls = conversionfunction.master_conversion_function(usd_spent)
 
-st.title("2. Reward Types")
-st.subheader(f" 2.0 Explanation")
-st.write(f'''The chance for each reward class is (by controls):  
 
-        - Amazing: {str(Amazing * 100) + '%'} probability
-    - Regular: {str(Regular * 100) + '%'} probability
-    - Poor: {str((1 - (Amazing + Regular)) * 100) + '%'} probability (as complement)''')
+st.title(":blue[2. Reward Types]")
 
-fr = {
-    'categories': ['Amazing', 'Regular', 'Poor'],
-    'probabilities': [Amazing, Regular, 1 - (Regular + Amazing)]
-}
 
-new, plots_earned = complete_dynamics(conv_fun['ROLLS'], fr, all_rewards)
-plots_8 = plots_earned[1]
-plots_16 = plots_earned[2]
-plots_32 = plots_earned[3]
 
-chart_data = pd.DataFrame(
-    {'Rewards_Types': ['Poor', 'Regular', 'Amazing'],
-     'Quantity': [len(new['Poor']), len(new['Regular']), len(new['Amazing'])]})
+n = rolls * n_players
 
-n = conv_fun['ROLLS'] * n_players
+plots_summary = {'Plot 8*8':0, 'Plot 16*16':0, 'Plot 32*32':0, 'Plot 64*64':0}
+if rolls > 0:
+    st.subheader('''2.1 Example (one player) VERSION 1''')
+    st.write(
+        f'''Reward Chances Link [here](https://docs.google.com/spreadsheets/d/1mDwwNCCeqi0cMjmO2SBg9iaw0gQaITJQoKw0Q2ozO1c/edit#gid=0).''')
+
+    st.write(f''':green[{n} rolls were paid in total ({n_players} players)], then the given rewards are distributed as follows:''')
+    hrolls = int(n*hpity_p)
+    srolls = int((n-int(n*hpity_p))*softp_p)
+    chart_data1 = pd.DataFrame(
+        {'Pity Types': ['HardPity','SoftPity',  'Normal'],
+         'Probabilities': [str(hpity_p*100)+' %', str(softp_p*100)+' %', str(100 - 100*(hpity_p + softp_p))+' %'],
+         'Number of rolls of type': [hrolls, srolls, n-(hrolls+srolls)]
+         })
+
+    st.dataframe(chart_data1)
+
+
+    rtype = 'HardPity'
+    st.markdown(f''':trophy: :trophy: :trophy: :trophy: :red[Community Tier 5  - {rtype[:4] + ' ' + rtype[4:]} Odds] :trophy: :trophy: :trophy: :trophy:''')
+    if chart_data1['Number of rolls of type'][0] > 0:
+        nd = normal_distribution(
+            all_rewards['NoMysteryBoxes']['Types'] + all_rewards['MysteryBoxes']['Types'] + all_rewards['Plots']['Types'],
+            (19*[0])+probabilities_for_amazing, int(hrolls), rtype[:4] + ' ' + rtype[4:])
+
+        for k, val in nd.items():
+            if 'Plot' in k:
+                plots_summary[k] += val
+    else:
+        st.write('No Rewards on Hard Pity')
+
+
+    rtype = 'SoftPity'
+    st.markdown(f''':trophy: :trophy: :trophy: :red[Community Tier 5  - {rtype[:4] + ' ' + rtype[4:]} Odds] :trophy: :trophy: :trophy:''')
+    if chart_data1['Number of rolls of type'][1] > 0:
+        MB_sp_b = st.number_input(
+            'Bronze Mystery Boxes Chances on Soft Pity', step=0.001, value=.24, format="%.4f", key=100000)
+        MB_sp_s = st.number_input(
+            'Silver Mystery Boxes Chances on Soft Pity', step=0.001, value=.28, format="%.4f", key=1100000)
+        MB_sp_g = st.number_input(
+            'Gold Mystery Boxes Chances on Soft Pity', step=0.001, value=.36, format="%.4f", key=1010000)
+        #min_value=0.00, max_value=1.0, value=.9, step=.01, key=1213)
+        p8_sp = st.number_input(
+            'Plot 8*8 on Soft Pity', step=0.001, value=.08, format="%.4f", key=123332212)
+            #min_value=0.00, max_value=min(0.0, 1.0 - (MB_sp) + 0.001), value=.06, step=.01, key=1214)
+        p16_sp = st.number_input(
+            'Plot 16*16 on Soft Pity', step=0.001, value=.03, format="%.4f", key=123332213)
+            #min_value=0.00, max_value=min(0.0, 1.0 - (MB_sp + p8_sp) + 0.001), value=.004, step=.001, key=3)
+        p32_sp = st.number_input(
+            'Plot 32*32 Chances on Soft Pity', step=0.001, value=.01, format="%.4f", key=123332214)
+        #min_value=0.00,max_value=min(0.0, 1.0 - (MB_sp + p8_sp + p16_sp) + 0.001), value=0.001, step=.01, key=1)
+        try:
+            nd=normal_distribution(
+                all_rewards['NoMysteryBoxes']['Types'] + all_rewards['MysteryBoxes']['Types'] + all_rewards['Plots']['Types'],
+                7*[0] + 4*[MB_sp_b/4]+4*[MB_sp_s/4]+4*[MB_sp_g/4]+[p8_sp,p16_sp,p32_sp,
+                                                                   1-(p8_sp+p16_sp+p32_sp+MB_sp_s+MB_sp_g+MB_sp_b)],
+                int(srolls), rtype[:4] + ' ' + rtype[4:])
+
+            for k, val in nd.items():
+                if 'Plot' in k:
+                    plots_summary[k] += val
+        except Exception as e:
+            logging.error('In soft pity ', e)
+    else:
+        st.write('No Rewards on Soft Pity')
+
+    rtype = 'Normal'
+    st.markdown(f''':trophy: :trophy: :red[Community Tier 5  - {rtype} Odds] :trophy: :trophy:''')
+
+    if chart_data1['Number of rolls of type'][2] > 0:
+        NoMB_nor = st.number_input(
+            'No Mystery Boxes Chances on Normal', step=0.001, value=.9, format="%.4f", key=2011)
+        MB_nor_b = st.number_input(
+            'Bronze Mystery Boxes Chances on Normal', step=0.001, value=.01, format="%.4f", key=2021)
+        MB_nor_s = st.number_input(
+            'Silver Mystery Boxes Chances on Normal', step=0.001, value=.02, format="%.4f", key=2022)
+        MB_nor_g = st.number_input(
+            'Gold Mystery Boxes Chances on Normal', step=0.001, value=.03, format="%.4f", key=20231)
+        p8_nor = st.number_input(
+            'Plot 8*8 on Normal', step=0.001, value=.02, format="%.4f", key=203)
+        p16_nor = st.number_input(
+            'Plot 16*16 on Normal', step=0.001, value=.01, format="%.4f", key=204)
+        p32_nor = st.number_input(
+            'Plot 32*32 Chances on Normal', step=0.001, value=.01, format="%.4f", key=205)
+
+        nd = normal_distribution(
+            all_rewards['NoMysteryBoxes']['Types'] + all_rewards['MysteryBoxes']['Types'] + all_rewards['Plots']['Types'],
+            (7 * [NoMB_nor / 7]) + (4 * [MB_nor_b / 4]) + (4 * [MB_nor_s / 4]) + (4 * [MB_nor_g / 4])
+            + [p8_nor, p16_nor, p32_nor,1 - (p8_nor + p16_nor + p32_nor + MB_nor_b + MB_nor_s + MB_nor_g + NoMB_nor)],
+            int(n-(hrolls+srolls)), rtype)
+
+        for k, val in nd.items():
+            if 'Plot' in k:
+                plots_summary[k] += val
+    else:
+        st.write('No Rewards on Normal')
+
+    def fun_prince(plot_str):
+        if '8*8' in plot_str:
+            return 480
+        elif '16*16' in plot_str:
+            return 1320
+        elif '32*32' in plot_str:
+            return 20000
+        elif '64*64' in plot_str:
+            return 32000
+
+
+    d_ = {'Plots': list(plots_summary.keys()),
+            'Amount': list(plots_summary.values()),
+                'Total USD': [plots_summary[l]*fun_prince(l) for l in plots_summary.keys()]}
+    pd_ = pd.DataFrame.from_dict(d_)
+
+    st.write(
+        f":green[BALANCE ON PLOTS REWARDS:] {':arrow_up:' if usd_spent > sum(d_['Total USD']) else ':arrow_down:'} {human_format(usd_spent - sum(d_['Total USD']))} USD.")
+    st.write(
+        f''':house: :green[Runiverse incomes] (one player): {human_format(usd_spent)} USD''')
+
+    st.write(
+        f''':video_game: :green[Players Earnings] ({n} rolls): {human_format(sum(d_['Total USD']))} USD ({sum(list(plots_summary.values()))} plots) as a reward.''')
+
+
+    st.dataframe(pd_)
+
+    ########################################################################################################################
+    ################################2.2 Probability Distribution Function ##################################################
+    ########################################################################################################################
+
+    dynamics = RollOut(rolls)
+    Amazing = hpity_p
+    Regular = softp_p
+    fr = {
+        'categories': ['Plots', 'MysteryBoxes', 'NoMysteryBoxes'],
+        'probabilities': [hpity_p, softp_p, 1 - (softp_p+hpity_p)]
+    }
+
+    all_rewards['MysteryBoxes']['Probabilities'] = (4*[.16/4]) + (4*[.24/4]) + (4*[.60/4])
+    all_rewards['NoMysteryBoxes']['Probabilities'] = [1/7,1/7,1/7,1/7,1/7,1/7,1-((1/7)+(1/7)+(1/7)+(1/7)+(1/7)+(1/7))]
+
+    new, plots_earned = dynamics.complete_dynamics(fr, all_rewards)
+
+    st.header(":blue[3. The Optimal Case of Gacha Dynamics]")
+
+    st.write(f"We are supposing that Normal Pity Odds are only related to No Mystery Boxes rewards, that means that having a mystery box or plot has 0 probability. "
+             f"The same for Soft Pity where we are supposing only Mystery Boxes rewards and so on for Plots related to hard pity. :blue[In this way we ensure only give plots as a rewards when a player complete {hpity} on 1K rolls.]"
+             f" Aditionally, once we give a plot as a reward we have no replacement of them, the chances must decrease, so we use an hypergeometrical distribution function on that case.")
+    plots_8 = plots_earned[1]
+    plots_16 = plots_earned[2]
+    plots_32 = plots_earned[3]
+    plots_64 = plots_earned[4]
+
+    st.subheader('''2.1 Example (one player) VERSION 0''')
+
+
+
+    plots_earn = {'8x8': plots_8, '16x16': plots_16, '32x32': plots_32, '64x64': plots_64}
+
+    rtype = 'Plots'
+    st.caption(f''':moneybag: :moneybag: :moneybag: :red[{rtype}] :moneybag: :moneybag: :moneybag:''')
+    chart_data = pd.DataFrame(all_rewards[rtype])
+    st.write(f''':green[{rtype} Type] Rewards probabilities:''')
+    st.dataframe(chart_data)
+    if len(new[rtype]) > 0:
+        function(new,rtype, plots_earned, plot_base_price, rolls, reserve_multiplier,conv_fun, plots_earn)
+
+    else:
+        st.write('''In this example were no Plots (Hard Pity) rewards.''')
+
+
+    rtype = 'MysteryBoxes'
+    st.caption(f''':moneybag: :moneybag: :red[{rtype}] :moneybag: :moneybag:''')
+    chart_data = pd.DataFrame(all_rewards[rtype])
+    st.write(f''':green[{rtype} Type] Rewards probabilities:''')
+    st.dataframe(chart_data)
+    if len(new[rtype]) > 0:
+        function(new,rtype, plots_earned, plot_base_price, rolls, reserve_multiplier,conv_fun, plots_earn)
+
+    else:
+        st.write('''In this example were no Soft Pity rewards.''')
+
+
+    rtype = 'NoMysteryBoxes'
+    st.caption(f''':moneybag: :red[{rtype}] :moneybag:''')
+    chart_data = pd.DataFrame(all_rewards[rtype])
+    st.write(f''':green[{rtype} Type] Rewards probabilities:''')
+    st.dataframe(chart_data)
+    if len(new[rtype]) > 0:
+        function(new, rtype, plots_earned, plot_base_price, rolls, reserve_multiplier,conv_fun, plots_earn)
+
+    else:
+        st.write('''In this example were no Normal rewards.''')
+
+
+
+
+st.subheader(f" 2.2 Probability Distribution Function")
+
+
+st.write(f'''The chance for each reward class is:  
+
+        - Plots (Hard Pity): {str(hpity_p * 100) + '%'} probability
+    - Mystery Boxes (Soft Pity): {str(softp_p * 100) + '%'} probability
+    - No Mystery Boxes (Normal): {str(round((1 - (hpity_p + softp_p)) * 100)) + '%'} probability (as complement)''')
+
 
 if n > 0:
-    def binomial_plot(n, p, title):
+    binomial_pt = BinomialDistributionFunction(int(n))
+    st.write(f'''By {n_players} player{'s' if n_players>1 else ''}, {rolls} rolls each of them (:green[{n} total rolls]), we have.''')
+    if hpity_p > 0:
+        binomial_pt.binomial_plot(hpity_p, f'''Plots Reward (Hard Pity) - Chances on {n} rolls''')
 
-        # defining list of r values
-        r_values = list(range(n + 1))
-        # list of pmf values
-        dist = [binom.pmf(r, n, p) for r in r_values]
-        mean = n * p
-        variance = n * p * (1 - p)
-        df = pd.DataFrame({f"Number of events": r_values, 'Probability': dist})
-        fig = px.scatter(df, x=f"Number of events", y="Probability",
-                         title=f"{title}")
-        fig.add_vline(x=mean, line_width=3, line_dash="dash", line_color="green",
-                      annotation_text=f'''Mean {"{:.2f}".format(mean)}''', annotation_position="bottom left")
-        fig.add_vrect(x0=mean - 2 * abs(np.sqrt(variance)), x1=mean + 2 * abs(np.sqrt(variance)),
-                      annotation_text=f'''CI : [{"{:.2f}".format(mean - 2 * abs(np.sqrt(variance)))}, {"{:.2f}".format(mean + 2 * abs(np.sqrt(variance)))}]''',
-                      annotation_position="top right",
-                      fillcolor="red", opacity=0.25, line_width=0
-                      )
-        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
-        st.write(f'''Statistics are:
+    if softp_p > 0:
+        binomial_pt.binomial_plot(softp_p, f'''Regular Rewards (Soft Pity) - Chances on {n} rolls''')
 
-                            - The mean is having {"{:.2f}".format(mean)} rewards of this type
-    - 95% Confidence interval: [{"{:.2f}".format(max(0, mean - 2 * abs(np.sqrt(variance))))}, {"{:.2f}".format(mean + 2 * abs(np.sqrt(variance)))}]
-    - Variance {"{:.2f}".format(variance)}''')
+    if 1 - (hpity_p + softp_p) > 0:
+        binomial_pt.binomial_plot(1 - (hpity_p + softp_p), f'''No Mystery Boxes Reward (Normal Pity) - Chances on {n} rolls''')
 
-    st.write(f'''By {n_players} player{'s' if n_players>1 else ''}, {conv_fun['ROLLS']} rolls each of them (:green[{n} total rolls]), we have.''')
-    if Amazing > 0:
-        binomial_plot(n, Amazing, f'''Amazing Reward - Chances on {n} rolls''')
-
-    if Regular > 0:
-        binomial_plot(n, Regular, f'''Regular Reward - Chances on {n} rolls''')
-
-    if 1 - (Amazing + Regular) > 0:
-        binomial_plot(n, 1 - (Amazing + Regular), f'''Poor Reward - Chances on {n} rolls''')
+else:
+    st.write(f'''ZERO rolls''')
 
 ########################################################################################################################
-########################################################################################################################
-########################################################################################################################
-
-if conv_fun['ROLLS'] > 0:
-    st.subheader('''2.1 Example one player ''')
-    st.write(f''':green[One player Paid {conv_fun['ROLLS']} rolls], then the rewards types are distributed as follows:''')
-    st.dataframe(chart_data)
-
-    plots_earn = {'8x8': plots_8, '16x16': plots_16, '32x32': plots_32}
-
-    rtype = 'Amazing'
-    st.caption(f''':moneybag: :moneybag: :moneybag: :red[{rtype}] :moneybag: :moneybag: :moneybag:''')
-    if len(new[rtype]) > 0:
-        dict0 = {}
-        for i in new[rtype]:
-            if i not in dict0.keys():
-                dict0[i] = 1
-            else:
-                dict0[i] += 1
-
-        sorted_ = sorted(dict0.items(), key=lambda x: x[0])
-        dict1 = dict(sorted_)
-        dict_f = {'Rewards': dict1.keys(), 'Quantity': dict1.values()}
-
-        df = pd.DataFrame(dict_f)
-
-        fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
-                     title=f"""{rtype} Rewards""",
-                     height=400
-                     )
-        fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
-        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
-
-        if plots_earned[0] > 0:
-            plots_earns = plot_base_price * ((plots_8 * reserve_multiplier['8x8']) + (
-                    plots_16 * reserve_multiplier['16x16']) + (plots_32 * reserve_multiplier['32x32']))
-            runi_earns = conv_fun['USD'] - plots_earns
-            st.write(f''':green[Player earns {int(plots_earned[0])} plots] as follows: {plots_earn}. That means in USD: 
-
-                - Player earns by plots: {human_format(plots_earns)} USD 
-    - Runiverse {'earns' if runi_earns > 0 else 'loses'} about {human_format(runi_earns)} USD''')
-
-
-    else:
-        st.write('''In this example were no Amazing rewards.''')
-
-    chart_data = pd.DataFrame(all_rewards[rtype])
-    st.write(f''':green[{rtype} Type] probabilities:''')
-    st.dataframe(chart_data)
-
-    rtype = 'Regular'
-    st.caption(f''':moneybag: :moneybag: :red[{rtype}] :moneybag: :moneybag:''')
-    if len(new[rtype]) > 0:
-
-        dict0 = {}
-        for i in new[rtype]:
-            if i not in dict0.keys():
-                dict0[i] = 1
-            else:
-                dict0[i] += 1
-
-        sorted_ = sorted(dict0.items(), key=lambda x: x[0])
-        dict1 = dict(sorted_)
-
-        dict_f = {'Rewards': dict1.keys(), 'Quantity': dict1.values()}
-
-        df = pd.DataFrame(dict_f)
-        # st.dataframe(df)
-        fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
-                     title=f"""{rtype} Rewards""",
-                     height=400
-                     )
-        fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
-        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
-
-    else:
-        st.write('''In this example were no Regular rewards.''')
-
-    chart_data = pd.DataFrame(all_rewards[rtype])
-    st.write(f''':green[{rtype} Type] probabilities:''')
-    st.dataframe(chart_data)
-
-    rtype = 'Poor'
-    st.caption(f''':moneybag: :red[{rtype}] :moneybag:''')
-    if len(new[rtype]) > 0:
-
-        dict0 = {}
-        for i in new[rtype]:
-            if i not in dict0.keys():
-                dict0[i] = 1
-            else:
-                dict0[i] += 1
-
-        sorted_ = sorted(dict0.items(), key=lambda x: x[0])
-        dict1 = dict(sorted_)
-
-        dict_f = {'Rewards': dict1.keys(), 'Quantity': dict1.values()}
-
-        df = pd.DataFrame(dict_f)
-        # st.dataframe(df)
-        fig = px.bar(df, x="Rewards", y="Quantity", text="Quantity",
-                     title=f"""{rtype} Rewards""",
-                     height=400
-                     )
-        fig.update_traces(texttemplate='%{text:.2s}', textposition='inside')
-        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
-
-    else:
-        st.write('''In this example were no Poor rewards.''')
-
-    chart_data = pd.DataFrame(all_rewards[rtype])
-    st.write(f''':green[{rtype} Type] probabilities:''')
-    st.dataframe(chart_data)
-
-########################################################################################################################
-########################################################################################################################
+####################### Amazing Rewards - Probability Distribution Function on plots ###################################
 ########################################################################################################################
 
 try:
-    st.title("3. Amazing Rewards - Probability Distribution Function")
-
-    st.subheader("3.1 Explanation")
-    st.write(f'''At the beginning, there are {N} plots as rewards distributed as follows:
+    st.subheader("2.2 Plots Rewards - Probability Distribution Function")
+    st.write(f'''With focus on :green[Plots Rewards] we fit an probability distribution function to explain how many plots we give to players after certain number of rolls.''')
+    st.write(f'''EXPLANATION: At the beginning, there are {N} plots as rewards distributed as follows:
 
             - 8x8: {round(100 * p_8 / N)} % ({p_8} plots)
     - 16x16: {round(100 * p_16 / N)} % ({p_16} plots)
     - 32x32: {round(100 * p_32 / N)} % ({p_32} plots)
 once one is giving as a reward, the collection decreases (no replacement) and then its probability changes.''')
 
-    total_spent = n_players * usd_spent
-    tolls_per_tspent = master_conversion_function(total_spent, rolls_by_usd_price, one_roll_mana_price, eth_rate)
-    dyn, plots_earn = complete_dynamics(tolls_per_tspent['ROLLS'], fr, all_rewards)
+    st.write(
+        f''':moneybag: {n_players} players, each of them spending {usd_spent} USD on average means:''')
+
+    #total_spent = n_players * usd_spent
+    #conversionfunction2 = CurrenciesConversion(url, rolls_by_usd_price, one_roll_mana_price)
+
+    tolls_per_tspent, totalrolls = conversionfunction.master_conversion_function(n_players * usd_spent)
+
+    dynamics = RollOut(totalrolls)
+    dyn, plots_earn = dynamics.complete_dynamics(fr, all_rewards)
+
     plots_earned_by_rolls = plots_earn[0]
 
     ether = "{:.2f}".format(tolls_per_tspent['ETH'])
+    players_earnings_usd = plot_base_price * (
+                (plots_earn[1] * reserve_multiplier['8x8']) + (plots_earn[2] * reserve_multiplier['16x16']) +
+                    (plots_earn[-2] * reserve_multiplier['32x32'])+(plots_earn[-1] * reserve_multiplier['64x64']))
 
-    st.write(
-        f'''(3 Plot Chances - Control) {n_players} players, each of them spending {usd_spent} USD on average means:''')
 
     if plots_earned_by_rolls > 0:
+        #Earnings player vs Runiverse
+        st.write(f''':house: :green[Runiverse incomes:] 
 
-        st.write(f''':green[Players Earnings:]
-
-        - {tolls_per_tspent['ROLLS']} rolls (In average {int(tolls_per_tspent['ROLLS'] / n_players)} per player)
-    - {tolls_per_tspent['Mana']} Mana Units 
-    - {plots_earned_by_rolls} plots ({human_format(480 * ((plots_earn[1] * reserve_multiplier['8x8']) + (plots_earn[2] * reserve_multiplier['16x16']) + (plots_earn[-1] * reserve_multiplier['32x32'])))} USD) as a reward as follows:
-        - 8x8: {plots_earn[1]} plots ({480 * plots_earn[1] * reserve_multiplier['8x8']} USD)
-        - 16x16: {plots_earn[2]} plots ({480 * plots_earn[2] * reserve_multiplier['16x16']} USD)
-        - 32x32: {plots_earn[3]} plots ({480 * plots_earn[3] * reserve_multiplier['32x32']} USD) ''')
-
-        st.write(f''':green[Runiverse incomes:] (Control 1 conversion rates)
-
-            - {human_format(total_spent)} USD
+                    - {human_format(n_players * usd_spent)} USD
     - {ether} ETHER''')
+
+
+        st.write(f''':video_game: :green[Players Earnings:]
+
+        - {totalrolls} rolls (In average {int(totalrolls/ n_players)} per player)
+    - {human_format(tolls_per_tspent['Mana'])} Mana Units 
+    - {plots_earned_by_rolls} plots ({human_format(players_earnings_usd)} USD) as a reward as follows:
+        - 8x8: {plots_earn[1]} plots ({plot_base_price * plots_earn[1] * reserve_multiplier['8x8']} USD)
+        - 16x16: {plots_earn[2]} plots ({plot_base_price * plots_earn[2] * reserve_multiplier['16x16']} USD)
+        - 32x32: {plots_earn[3]} plots ({plot_base_price * plots_earn[3] * reserve_multiplier['32x32']} USD)
+        - 64x64: {plots_earn[4]} plots ({plot_base_price * plots_earn[4] * reserve_multiplier['64x64']} USD)''')
+
+        st.write(f''':red[Balance: {':arrow_up:' if (n_players * usd_spent)-players_earnings_usd>0 else ':arrow_down:'} {human_format((n_players * usd_spent)-players_earnings_usd)} USD]''')
 
         K = plots_earn[0]
         if plots_earn[0] > 0:
-            st.subheader(f"3.2 Probability to have plot types as a reward for the given number of plots {(K)}.")
+            st.subheader(f"2.2.3 Probability to have plot types as a reward for the given number of plots {(K)}.")
             st.write(
-                f''':green[We use an hyper geometric distribution function to our dynamics.] Probabilities are given on {K} events.''')
+                f''':green[Probabilities are given on {K} events.] \n
+                We use an hyper geometric distribution function to our dynamics.''')
+            hyp_pl = HypergeometricDistributionFunction(K, N)
+            hyp_pl.plots_stat('8x8', p_8)
 
-            ps = '8x8'
-            n = p_8
-            mean = n * K / N
-            variance = n * K * (N - n) * (N - K) / ((N * N * (N - 1)))
-            std = np.sqrt(variance)
-            hypergeom_plot(N, n, K, ps, mean, std)
-            st.write(f''':green[{ps} plots] After {K} events Statistics are:
+            hyp_pl.plots_stat('16x16', p_16)
 
-                - The mean is having {"{:.2f}".format(mean)} plots of that type
-    - 95% Confidence interval: [{"{:.2f}".format(max(0, mean - 2 * abs(std)))}, {"{:.2f}".format(mean + 2 * abs(std))}] plots of that type
-    - Variance {"{:.2f}".format(variance)}''')
+            hyp_pl.plots_stat('32x32', p_32)
 
-            ps = '16x16'
-            n = p_16
-            mean = n * K / N
-            variance = n * K * (N - n) * (N - K) / ((N * N * (N - 1)))
-            std = np.sqrt(variance)
-            hypergeom_plot(N, n, K, ps, mean, std)
-            st.write(f''':green[{ps} plots] After {K} events Statistics are:
-
-                    - The mean is having {"{:.2f}".format(mean)} plots of that type
-    - 95% Confidence interval: [{"{:.2f}".format(max(0, mean - 2 * abs(std)))}, {"{:.2f}".format(mean + 2 * abs(std))}] plots of that type
-    - Variance {"{:.2f}".format(variance)}''')
-
-            ps = '32x32'
-            n = p_32
-            mean = n * K / N
-            variance = n * K * (N - n) * (N - K) / ((N * N * (N - 1)))
-            std = np.sqrt(variance)
-            hypergeom_plot(N, n, K, ps, mean, std)
-            st.write(f''':green[{ps} plots] After {K} events Statistics are:
-
-                    - The mean is having {"{:.2f}".format(mean)} plots of that type
-    - 95% Confidence interval: [{"{:.2f}".format(max(0, mean - 2 * abs(std)))}, {"{:.2f}".format(mean + 2 * abs(std))}] plots of that type
-    - Variance {"{:.2f}".format(variance)}''')
+            hyp_pl.plots_stat('64x64', 1-(p_8+p_16+p_32))
 
     else:
         st.write(''':red[No plots were given by this spent and number of players]''')
 
 except Exception as e:
-    logging.error(f'''Error {e} in 3rd section ''')
+    logging.error(f'''Error----> {e} <--- in 3rd section ''')
     pass
