@@ -213,9 +213,9 @@ if rolls > 0:
     pd_ = pd.DataFrame.from_dict(d_)
 
     st.write(
-        f":green[BALANCE ON PLOTS REWARDS:] {':arrow_up:' if usd_spent > sum(d_['Total USD']) else ':arrow_down:'} {human_format(usd_spent - sum(d_['Total USD']))} USD.")
+        f":green[BALANCE ON PLOTS REWARDS:] {':arrow_up:' if usd_spent > sum(d_['Total USD']) else ':arrow_down:'} {human_format(usd_spent*n_players - sum(d_['Total USD']))} USD.")
     st.write(
-        f''':house: :green[Runiverse incomes] (one player): {human_format(usd_spent)} USD''')
+        f''':house: :green[Runiverse incomes]: {human_format(usd_spent*n_players)} USD''')
 
     st.write(
         f''':video_game: :green[Players Earnings] ({n} rolls): {human_format(sum(d_['Total USD']))} USD ({sum(list(plots_summary.values()))} plots) as a reward.''')
