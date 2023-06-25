@@ -1,1 +1,3 @@
 # gacha-probabilities-dashboard
+
+Main Dashboard [link](https://mariaob1201-gacha-probabilities-main-x3ddp6.streamlit.app/) is about a simulation of the Gacha System, based on statistical binomila distribution case. We also include a case of hypergeometric distribution case, by fitting a pmf on that. The idea behind the last case is to provide such estimates for special rewards that are finite and cost money for the business. I provided a dynamic dashboard where number of players, average spend and probabilities are inputs, then you can see the in-game balance and the CI on number specific items that can be rewarded on such escenarios.
